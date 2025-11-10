@@ -1,0 +1,5 @@
+{
+  "name": "Xianxia Card RPG",
+  "description": "A Xianxia-themed role-playing game with turn-based card combat, powered by the Gemini API. Collect and upgrade character cards, equip powerful artifacts, and engage in tactical 1v1 battles while exploring an immersive story.",
+  "requestFramePermissions": []
+}

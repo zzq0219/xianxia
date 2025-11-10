@@ -1,0 +1,137 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>仙侠卡牌RPG</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              'serif': ['"Noto Serif SC"', 'serif'],
+              'sans': ['"Inter"', 'sans-serif'],
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.5s ease-in-out',
+              'slide-up': 'slideUp 0.3s ease-out',
+              'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
+              'flash': 'flash 0.5s ease-out',
+              'glow': 'glow 2s ease-in-out infinite alternate',
+              'float': 'float 3s ease-in-out infinite',
+              'marquee': 'marquee 40s linear infinite',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: 0 },
+                '100%': { opacity: 1 },
+              },
+              slideUp: {
+                '0%': { transform: 'translateY(100%)', opacity: 0.8 },
+                '100%': { transform: 'translateY(0)', opacity: 1 },
+              },
+              shake: {
+                '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
+                '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+                '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
+                '40%, 60%': { transform: 'translate3d(4px, 0, 0)' },
+              },
+              flash: {
+                '0%, 100%': { opacity: 1 },
+                '50%': { opacity: 0.1 },
+              },
+              glow: {
+                'from': { textShadow: '0 0 5px #fef08a, 0 0 10px #fef08a, 0 0 15px #fde047' },
+                'to': { textShadow: '0 0 10px #facc15, 0 0 20px #facc15, 0 0 30px #eab308' },
+              },
+               float: {
+                '0%, 100%': { transform: 'translateY(0px)' },
+                '50%': { transform: 'translateY(-8px)' },
+              },
+              marquee: {
+                '0%': { transform: 'translateX(0)' },
+                '100%': { transform: 'translateX(-50%)' },
+              },
+            },
+          },
+        },
+      }
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.28.0"
+  }
+}
+</script>
+<style>
+    body {
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-color: #0c0a09; /* stone-950 */
+    }
+    .prose {
+        --tw-prose-body: #d6d3d1; /* stone-400 */
+        --tw-prose-headings: #fde047; /* yellow-300 */
+        --tw-prose-invert-body: #d6d3d1;
+        --tw-prose-invert-headings: #fde047;
+    }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #1c1917; } /* stone-900 */
+    ::-webkit-scrollbar-thumb { background: #57534e; border-radius: 4px; } /* stone-600 */
+    ::-webkit-scrollbar-thumb:hover { background: #78716c; } /* stone-500 */
+
+    .ornate-border {
+        border: 10px solid;
+        border-image-slice: 40 42;
+        border-image-width: 15px;
+        border-image-outset: 0;
+        border-image-repeat: stretch;
+        border-image-source: url('https://i.imgur.com/z4b2r4j.png');
+        position: relative;
+    }
+    .scroll-container {
+      background-image: url('https://www.transparenttextures.com/patterns/old-paper-2.png'), linear-gradient(to bottom, #f5eadd, #d8c9b3);
+      background-color: #e4d8c5; /* A base parchment color */
+      color: #402e1a;
+      border: 2px solid #a89379;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+      padding: 1rem 2rem;
+      border-radius: 2px;
+    }
+    .scroll-container .prose {
+        --tw-prose-body: #5c452b;
+        --tw-prose-headings: #8c6a48;
+    }
+    .text-rainbow {
+        background-image: linear-gradient(to right, #f87171, #fb923c, #facc15, #4ade80, #38bdf8, #a78bfa, #f472b6);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        animation: rainbow-flow 3s linear infinite;
+    }
+    @keyframes rainbow-flow {
+        to {
+            background-position: 200% center;
+        }
+    }
+</style>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-stone-950 text-stone-300 font-sans">
+    <div id="root" class="w-screen h-screen overflow-hidden"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
