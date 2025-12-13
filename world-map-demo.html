@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>仙侠世界地图 - 演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: linear-gradient(to bottom, #0c0a09, #1c1917, #0c0a09);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fef3c7;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 95vw;
+            height: 90vh;
+            max-width: 1400px;
+            max-height: 900px;
+            position: relative;
+        }
+
+        .title {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(to right, #fbbf24, #f59e0b, #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+            letter-spacing: 0.5rem;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .map-wrapper {
+            width: 100%;
+            height: 100%;
+            border-radius: 1rem;
+            border: 3px solid rgba(217, 119, 6, 0.5);
+            box-shadow: 0 0 50px rgba(217, 119, 6, 0.3),
+                        inset 0 0 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+            background: radial-gradient(circle at center, #1c1917, #0c0a09);
+        }
+
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            border-radius: 0.75rem;
+            border: 2px solid rgba(217, 119, 6, 0.3);
+            z-index: 100;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .info-panel h3 {
+            color: #fbbf24;
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .info-panel p {
+            color: #fef3c7;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .location-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #d97706, #f59e0b);
+            padding: 0.25rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            box-shadow: 0 2px 10px rgba(217, 119, 6, 0.4);
+        }
+
+        /* SVG地图样式 */
+        #world-map {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+
+        #world-map:active {
+            cursor: grabbing;
+        }
+
+        .location-marker {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .location-marker:hover {
+            filter: brightness(1.3);
+        }
+
+        .control-hint {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(217, 119, 6, 0.3);
+            font-size: 0.85rem;
+            z-index: 50;
+        }
+
+        .legend {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(217, 119, 6, 0.3);
+            font-size: 0.85rem;
+            z-index: 50;
+        }
+
+        .legend h4 {
+            color: #fbbf24;
+            margin-bottom: 0.75rem;
+            font-weight: bold;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">修真世界全图</h1>
+        
+        <div class="map-wrapper">
+            <div class="control-hint">
+                <div style="color: #fbbf24; margin-bottom: 0.5rem;">🖱️ 操作指南</div>
+                <div>滚轮缩放 | 拖拽移动 | 点击地点查看详情</div>
+            </div>
+
+            <div class="legend">
+                <h4>五域方位</h4>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #22c55e;"></div>
+                    <span>东荒 - 生机盎然</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #fcd34d;"></div>
+                    <span>西境 - 荒漠遗迹</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #ef4444;"></div>
+                    <span>南疆 - 毒瘴蛮荒</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #3b82f6;"></div>
+                    <span>北原 - 冰封雪域</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #a855f7;"></div>
+                    <span>中州 - 天下中心</span>
+                </div>
+            </div>
+
+            <svg id="world-map" viewBox="0 0 1200 1200">
+                <!-- 定义滤镜和效果 -->
+                <defs>
+                    <!-- 水墨模糊 -->
+                    <filter id="ink-blur">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="2" />
+                    </filter>
+
+                    <!-- 发光效果 -->
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+                        <feMerge>
+                            <feMergeNode in="coloredBlur" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+
+                    <!-- 文字阴影 -->
+                    <filter id="text-shadow">
+                        <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.8" />
+                    </filter>
+
+                    <!-- 水墨纹理 -->
+                    <filter id="watercolor">
+                        <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="10" />
+                        <feDisplacementMap in="SourceGraphic" scale="15" />
+                    </filter>
+
+                    <!-- 区域渐变 -->
+                    <radialGradient id="grad-east" cx="20%" cy="20%" r="60%">
+                        <stop offset="0%" stop-color="#22c55e" stop-opacity="0.25" />
+                        <stop offset="100%" stop-color="#22c55e" stop-opacity="0" />
+                    </radialGradient>
+                    <radialGradient id="grad-west" cx="75%" cy="20%" r="60%">
+                        <stop offset="0%" stop-color="#fcd34d" stop-opacity="0.25" />
+                        <stop offset="100%" stop-color="#fcd34d" stop-opacity="0" />
+                    </radialGradient>
+                    <radialGradient id="grad-south" cx="75%" cy="75%" r="60%">
+                        <stop offset="0%" stop-color="#ef4444" stop-opacity="0.25" />
+                        <stop offset="100%" stop-color="#ef4444" stop-opacity="0" />
+                    </radialGradient>
+                    <radialGradient id="grad-north" cx="20%" cy="75%" r="60%">
+                        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.25" />
+                        <stop offset="100%" stop-color="#3b82f6" stop-opacity="0" />
+                    </radialGradient>
+                    <radialGradient id="grad-center" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="#a855f7" stop-opacity="0.3" />
+                        <stop offset="100%" stop-color="#a855f7" stop-opacity="0" />
+                    </radialGradient>
+                </defs>
+
+                <!-- 背景层 -->
+                <rect width="1200" height="1200" fill="#0c0a09" />
+                <rect width="1200" height="1200" fill="#1c1917" opacity="0.5" filter="url(#watercolor)" />
+
+                <!-- 区域颜色 -->
+                <rect width="1200" height="1200" fill="url(#grad-center)" />
+                <rect width="1200" height="1200" fill="url(#grad-east)" />
+                <rect width="1200" height="1200" fill="url(#grad-west)" />
+                <rect width="1200" height="1200" fill="url(#grad-south)" />
+                <rect width="1200" height="1200" fill="url(#grad-north)" />
+
+                <!-- 山脉 -->
+                <g id="mountains" opacity="0.3">
+                    <path d="M100,800 Q150,700 200,750 T300,800 T400,750 T500,800" fill="none" stroke="#574d3d" stroke-width="3" filter="url(#ink-blur)" />
+                    <path d="M200,900 Q250,820 300,850 T400,900 T500,850 T600,900" fill="none" stroke="#574d3d" stroke-width="3" filter="url(#ink-blur)" />
+                    <path d="M700,300 Q750,200 800,250 T900,300 T1000,250 T1100,300" fill="none" stroke="#574d3d" stroke-width="3" filter="url(#ink-blur)" />
+                </g>
+
+                <!-- 河流 -->
+                <g id="rivers">
+                    <path d="M100,200 Q200,250 300,200 T500,250 T700,200" fill="none" stroke="#60a5fa" stroke-width="4" opacity="0.4" stroke-dasharray="10 20">
+                        <animate attributeName="stroke-dashoffset" from="0" to="30" dur="3s" repeatCount="indefinite" />
+                    </path>
+                    <path d="M500,700 Q600,750 700,720 T900,700" fill="none" stroke="#a855f7" stroke-width="4" opacity="0.4" stroke-dasharray="10 20">
+                        <animate attributeName="stroke-dashoffset" from="0" to="30" dur="3s" repeatCount="indefinite" />
+                    </path>
+                </g>
+
+                <!-- 云雾 -->
+                <g id="clouds" opacity="0.15">
+                    <ellipse cx="150" cy="100" rx="80" ry="40" fill="#f5f5f4" filter="url(#ink-blur)">
+                        <animate attributeName="cx" values="150;200;150" dur="15s" repeatCount="indefinite" />
+                    </ellipse>
+                    <ellipse cx="600" cy="400" rx="80" ry="40" fill="#f5f5f4" filter="url(#ink-blur)">
+                        <animate attributeName="cx" values="600;650;600" dur="18s" repeatCount="indefinite" />
+                    </ellipse>
+                </g>
+
+                <!-- 地点标记将通过JavaScript动态生成 -->
+                <g id="locations"></g>
+
+                <!-- 星辰点缀 -->
+                <g id="stars" opacity="0.6">
+                    <circle cx="200" cy="150" r="1.5" fill="#fef3c7">
+                        <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite" />
+                    </circle>
+                    <circle cx="800" cy="300" r="1.5" fill="#fef3c7">
+                        <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" repeatCount="indefinite" />
+                    </circle>
+                    <circle cx="400" cy="900" r="1.5" fill="#fef3c7">
+                        <animate attributeName="opacity" values="0.3;1;0.3" dur="2.5s" repeatCount="indefinite" />
+                    </circle>
+                </g>
+            </svg>
+
+            <div class="info-panel" id="info-panel" style="display: none;">
+                <h3 id="location-name">地点名称</h3>
+                <p id="location-desc">地点描述</p>
+                <div class="location-badge" id="location-region">区域</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 地点数据
+        const locations = [
+            { id: 'qing_she_zong', name: '青蛇宗', type: 'Sect', region: '东荒', x: 250, y: 300, description: '一切开始的地方，一个中等规模的修仙宗门。', isMajor: true },
+            { id: 'bai_hua_gu', name: '百花谷', type: 'Sect', region: '东荒', x: 150, y: 450, description: '以医术和丹药闻名的女性宗门。', isMajor: true },
+            { id: 'wan_yao_sen_lin', name: '万妖森林', type: 'Forest', region: '东荒', x: 350, y: 500, description: '妖兽横行，但机遇与危险并存的古老森林。', isMajor: false },
+            { id: 'tian_mo_cheng', name: '天魔城', type: 'City', region: '西境', x: 950, y: 200, description: '魔道修士的聚集地，混乱但自由。', isMajor: true },
+            { id: 'huang_gu_yi_ji', name: '荒古遗迹', type: 'Mountain', region: '西境', x: 1050, y: 350, description: '上古仙魔大战的战场，散落着无数法宝残片。', isMajor: false },
+            { id: 'wu_shen_zhai', name: '巫神寨', type: 'Sect', region: '南疆', x: 800, y: 950, description: '南疆最大的巫蛊部落，神秘莫测。', isMajor: true },
+            { id: 'shi_wan_da_shan', name: '十万大山', type: 'Mountain', region: '南疆', x: 950, y: 1050, description: '连绵不绝的山脉，充满了毒虫猛兽和天材地宝。', isMajor: false },
+            { id: 'xuan_bing_gong', name: '玄冰宫', type: 'Sect', region: '北原', x: 200, y: 1000, description: '建立在万年冰川之上的宗门，弟子皆修行冰系功法。', isMajor: true },
+            { id: 'tian_ji_ge', name: '天机阁', type: 'City', region: '中州', x: 600, y: 500, description: '中州皇城，世界的中心，凡人与修士混居。', isMajor: true },
+            { id: 'kun_lun_xu', name: '昆仑墟', type: 'Mountain', region: '中州', x: 550, y: 350, description: '传说中仙人居住的圣山，灵气浓郁至极。', isMajor: true },
+        ];
+
+        // 生成地点标记
+        const locationsGroup = document.getElementById('locations');
+        const infoPanel = document.getElementById('info-panel');
+        const locationName = document.getElementById('location-name');
+        const locationDesc = document.getElementById('location-desc');
+        const locationRegion = document.getElementById('location-region');
+
+        let currentLocation = null;
+        let scale = 1;
+        let translateX = 0;
+        let translateY = 0;
+        let isDragging = false;
+        let dragStart = { x: 0, y: 0 };
+
+        const svg = document.getElementById('world-map');
+
+        // 创建地点标记
+        locations.forEach(loc => {
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.setAttribute('transform', `translate(${loc.x}, ${loc.y})`);
+            g.setAttribute('class', 'location-marker');
+            g.setAttribute('data-id', loc.id);
+
+            // 发光圈
+            const glowCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            glowCircle.setAttribute('r', '25');
+            glowCircle.setAttribute('fill', getRegionColor(loc.region));
+            glowCircle.setAttribute('opacity', loc.isMajor ? '0.3' : '0.2');
+            glowCircle.setAttribute('filter', 'url(#glow)');
+            
+            const animateR = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+            animateR.setAttribute('attributeName', 'r');
+            animateR.setAttribute('values', '25;30;25');
+            animateR.setAttribute('dur', '2s');
+            animateR.setAttribute('repeatCount', 'indefinite');
+            glowCircle.appendChild(animateR);
+
+            // 图标
+            const icon = createLocationIcon(loc.type);
+            
+            // 文字
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('y', '28');
+            text.setAttribute('fill', '#fef3c7');
+            text.setAttribute('font-size', '14');
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('filter', 'url(#text-shadow)');
+            text.textContent = loc.name;
+
+            // 重要标记
+            if (loc.isMajor) {
+                const star = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                star.setAttribute('x', '15');
+                star.setAttribute('y', '-15');
+                star.setAttribute('fill', '#fbbf24');
+                star.setAttribute('font-size', '20');
+                star.setAttribute('filter', 'url(#glow)');
+                star.textContent = '★';
+                
+                const animateOpacity = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+                animateOpacity.setAttribute('attributeName', 'opacity');
+                animateOpacity.setAttribute('values', '0.6;1;0.6');
+                animateOpacity.setAttribute('dur', '1.5s');
+                animateOpacity.setAttribute('repeatCount', 'indefinite');
+                star.appendChild(animateOpacity);
+                
+                g.appendChild(star);
+            }
+
+            g.appendChild(glowCircle);
+            g.appendChild(icon);
+            g.appendChild(text);
+
+            // 点击事件
+            g.addEventListener('click', () => showLocationInfo(loc));
+            g.addEventListener('mouseenter', () => {
+                g.style.transform = 'scale(1.2)';
+                g.style.transformOrigin = 'center';
+            });
+            g.addEventListener('mouseleave', () => {
+                g.style.transform = 'scale(1)';
+            });
+
+            locationsGroup.appendChild(g);
+        });
+
+        function getRegionColor(region) {
+            const colors = {
+                '东荒': '#22c55e',
+                '西境': '#fcd34d',
+                '南疆': '#ef4444',
+                '北原': '#3b82f6',
+                '中州': '#a855f7'
+            };
+            return colors[region] || '#ffffff';
+        }
+
+        function createLocationIcon(type) {
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            
+            switch(type) {
+                case 'Sect':
+                    const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path1.setAttribute('d', 'M-10 12 L0 -10 L10 12 Z');
+                    path1.setAttribute('fill', '#e5e7eb');
+                    path1.setAttribute('opacity', '0.9');
+                    const rect1 = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    rect1.setAttribute('x', '-6');
+                    rect1.setAttribute('y', '4');
+                    rect1.setAttribute('width', '12');
+                    rect1.setAttribute('height', '8');
+                    rect1.setAttribute('fill', '#e5e7eb');
+                    rect1.setAttribute('opacity', '0.9');
+                    g.appendChild(path1);
+                    g.appendChild(rect1);
+                    break;
+                case 'City':
+                    const rect2 = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    rect2.setAttribute('x', '-10');
+                    rect2.setAttribute('y', '-6');
+                    rect2.setAttribute('width', '20');
+                    rect2.setAttribute('height', '18');
+                    rect2.setAttribute('fill', '#e5e7eb');
+                    rect2.setAttribute('opacity', '0.9');
+                    rect2.setAttribute('rx', '2');
+                    g.appendChild(rect2);
+                    break;
+                case 'Mountain':
+                    const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path2.setAttribute('d', 'M-14 12 L0 -12 L14 12 Z');
+                    path2.setAttribute('fill', 'none');
+                    path2.setAttribute('stroke', '#e5e7eb');
+                    path2.setAttribute('stroke-width', '2.5');
+                    path2.setAttribute('opacity', '0.9');
+                    g.appendChild(path2);
+                    break;
+                case 'Forest':
+                    const path3 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path3.setAttribute('d', 'M0 -10 L-8 2 L-3 2 L-10 12 L10 12 L3 2 L8 2 Z');
+                    path3.setAttribute('fill', '#e5e7eb');
+                    path3.setAttribute('opacity', '0.9');
+                    g.appendChild(path3);
+                    break;
+                default:
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('r', '8');
+                    circle.setAttribute('fill', '#e5e7eb');
+                    circle.setAttribute('opacity', '0.9');
+                    g.appendChild(circle);
+            }
+            
+            return g;
+        }
+
+        function showLocationInfo(loc) {
+            currentLocation = loc;
+            locationName.textContent = loc.name;
+            locationDesc.textContent = loc.description;
+            locationRegion.textContent = `${loc.region} · ${loc.type}`;
+            infoPanel.style.display = 'block';
+        }
+
+        // 缩放和拖拽
+        svg.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            scale = Math.max(0.5, Math.min(3, scale * delta));
+            updateTransform();
+        });
+
+        svg.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            dragStart = { x: e.clientX - translateX, y: e.clientY - translateY };
+        });
+
+        svg.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                translateX = e.clientX - dragStart.x;
+                translateY = e.clientY - dragStart.y;
+                updateTransform();
+            }
+        });
+
+        svg.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        svg.addEventListener('mouseleave', () => {
+            isDragging = false;
+        });
+
+        function updateTransform() {
+            svg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        }
+    </script>
+</body>
+</html>

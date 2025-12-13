@@ -1,25 +1,47 @@
 {
   "name": "xianxia-card-rpg",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "description": "仙侠卡牌RPG - SillyTavern iframe 嵌入式游戏扩展",
+  "author": "Xianxia Card RPG Team",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "npm run typecheck && vite build",
+    "build:fast": "vite build",
+    "build:analyze": "cross-env ANALYZE=true vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "typecheck:watch": "tsc --noEmit --watch",
+    "clean": "rimraf dist",
+    "clean:all": "rimraf dist node_modules/.vite",
+    "prebuild": "npm run clean"
   },
   "dependencies": {
     "idb": "^8.0.3",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "^5.0.0",
+    "cross-env": "^7.0.3",
+    "rimraf": "^5.0.5",
+    "terser": "^5.31.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0",
     "vite-plugin-singlefile": "^2.3.0"
-  }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions",
+    "last 2 Safari versions",
+    "last 2 Edge versions"
+  ]
 }

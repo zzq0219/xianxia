@@ -1,0 +1,498 @@
+/**
+ * 仙侠卡牌RPG游戏 - UI增强样式表
+ * 专业级CSS美化方案
+ * ==========================================
+ */
+
+/* ========================================
+   1. 全局主题变量系统
+   ======================================== */
+:root {
+  /* 主色调 - 仙侠金色系 */
+  --primary-gold: #fcd34d;
+  --primary-gold-light: #fde68a;
+  --primary-gold-dark: #f59e0b;
+  
+  /* 背景色 - 深色神秘系 */
+  --bg-primary: #1c1917;
+  --bg-secondary: #292524;
+  --bg-overlay: rgba(0, 0, 0, 0.8);
+  
+  /* 强调色 */
+  --accent-red: #dc2626;
+  --accent-blue: #2563eb;
+  --accent-purple: #9333ea;
+  --accent-green: #10b981;
+  --accent-pink: #ec4899;
+  --accent-cyan: #06b6d4;
+  
+  /* 稀有度颜色 */
+  --rarity-common: #9ca3af;
+  --rarity-uncommon: #10b981;
+  --rarity-rare: #3b82f6;
+  --rarity-epic: #a855f7;
+  --rarity-legendary: #f59e0b;
+  --rarity-mythic: #ec4899;
+  --rarity-divine: #8b5cf6;
+  
+  /* 光效 */
+  --glow-gold: 0 0 20px rgba(252, 211, 77, 0.4);
+  --glow-red: 0 0 20px rgba(220, 38, 38, 0.4);
+  --glow-blue: 0 0 20px rgba(37, 99, 235, 0.4);
+  --glow-purple: 0 0 20px rgba(147, 51, 234, 0.4);
+  
+  /* 过渡动画 */
+  --transition-fast: 0.2s ease-in-out;
+  --transition-normal: 0.3s ease-in-out;
+  --transition-slow: 0.5s ease-in-out;
+}
+
+/* ========================================
+   2. 装饰性边框系统
+   ======================================== */
+
+/* 华丽边框 - 用于Modal */
+.ornate-border {
+  position: relative;
+  border: 2px solid rgba(252, 211, 77, 0.3);
+  box-shadow: 
+    0 0 30px rgba(252, 211, 77, 0.1),
+    inset 0 0 20px rgba(252, 211, 77, 0.05);
+}
+
+.ornate-border::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(135deg, 
+    rgba(252, 211, 77, 0.4), 
+    rgba(220, 38, 38, 0.2), 
+    rgba(147, 51, 234, 0.3),
+    rgba(252, 211, 77, 0.4)
+  );
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: rotateBorder 8s linear infinite;
+}
+
+@keyframes rotateBorder {
+  0%, 100% { filter: hue-rotate(0deg); }
+  50% { filter: hue-rotate(60deg); }
+}
+
+/* 对话框专用边框 */
+.ornate-border-dialog {
+  border: 2px solid rgba(252, 211, 77, 0.2);
+  box-shadow: 
+    0 10px 50px rgba(0, 0, 0, 0.5),
+    inset 0 0 30px rgba(252, 211, 77, 0.05);
+}
+
+/* ========================================
+   3. 卡牌系统美化
+   ======================================== */
+
+/* 卡牌容器 3D悬停 */
+.card-3d-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.card-3d-hover:hover {
+  transform: translateY(-8px) rotateX(5deg) rotateY(5deg) scale(1.02);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(252, 211, 77, 0.2);
+}
+
+/* 卡牌发光边框 - 传说级 */
+.card-legendary-glow {
+  position: relative;
+  animation: legendaryPulse 2s ease-in-out infinite;
+}
+
+.card-legendary-glow::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(45deg, #f59e0b, #fbbf24, #f59e0b);
+  opacity: 0.6;
+  filter: blur(8px);
+  z-index: -1;
+  animation: rotateGradient 3s linear infinite;
+}
+
+@keyframes legendaryPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.6); }
+  50% { box-shadow: 0 0 40px rgba(245, 158, 11, 0.9); }
+}
+
+@keyframes rotateGradient {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 卡牌闪光效果 */
+.card-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-shine::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.8s;
+}
+
+.card-shine:hover::after {
+  transform: translateX(100%);
+}
+
+/* ========================================
+   4. 按钮系统增强
+   ======================================== */
+
+/* 主要按钮 */
+.btn-primary-enhanced {
+  position: relative;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  border: 2px solid rgba(252, 211, 77, 0.5);
+  box-shadow: 
+    0 4px 15px rgba(245, 158, 11, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.btn-primary-enhanced::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.2) 100%);
+  transform: translateY(-100%);
+  transition: transform 0.3s;
+}
+
+.btn-primary-enhanced:hover::before {
+  transform: translateY(0);
+}
+
+.btn-primary-enhanced:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 25px rgba(245, 158, 11, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.btn-primary-enhanced:active {
+  transform: translateY(0);
+}
+
+/* ========================================
+   5. 进度条和状态条
+   ======================================== */
+
+/* 增强型HP血条 */
+.hp-bar-enhanced {
+  position: relative;
+  height: 12px;
+  background: rgba(28, 25, 23, 0.8);
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hp-bar-fill-enhanced {
+  height: 100%;
+  background: linear-gradient(90deg, #dc2626 0%, #ef4444 50%, #f87171 100%);
+  border-radius: 999px;
+  box-shadow: 
+    0 0 10px rgba(220, 38, 38, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.hp-bar-fill-enhanced::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+/* ========================================
+   6. Modal弹窗增强
+   ======================================== */
+
+/* Modal滑入动画 */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-slide-in {
+  animation: modalSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ========================================
+   7. 滚动条美化
+   ======================================== */
+
+.scrollbar-enhanced::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-enhanced::-webkit-scrollbar-track {
+  background: rgba(41, 37, 36, 0.5);
+  border-radius: 4px;
+}
+
+.scrollbar-enhanced::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(252, 211, 77, 0.6) 0%,
+    rgba(245, 158, 11, 0.6) 100%
+  );
+  border-radius: 4px;
+  border: 2px solid rgba(41, 37, 36, 0.5);
+}
+
+.scrollbar-enhanced::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(252, 211, 77, 0.8) 0%,
+    rgba(245, 158, 11, 0.8) 100%
+  );
+}
+
+/* 自定义滚动条 - 存档列表专用 */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 12px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: linear-gradient(
+    to right,
+    rgba(28, 25, 23, 0.5),
+    rgba(41, 37, 36, 0.5),
+    rgba(28, 25, 23, 0.5)
+  );
+  border-radius: 6px;
+  border: 1px solid rgba(120, 113, 108, 0.2);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(251, 191, 36, 0.7) 0%,
+    rgba(245, 158, 11, 0.8) 50%,
+    rgba(217, 119, 6, 0.7) 100%
+  );
+  border-radius: 6px;
+  border: 2px solid rgba(28, 25, 23, 0.8);
+  box-shadow:
+    0 0 10px rgba(251, 191, 36, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(251, 191, 36, 0.9) 0%,
+    rgba(245, 158, 11, 1) 50%,
+    rgba(217, 119, 6, 0.9) 100%
+  );
+  box-shadow:
+    0 0 15px rgba(251, 191, 36, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(
+    180deg,
+    rgba(217, 119, 6, 0.9) 0%,
+    rgba(245, 158, 11, 1) 50%,
+    rgba(251, 191, 36, 0.9) 100%
+  );
+}
+
+/* ========================================
+   8. 特效动画库
+   ======================================== */
+
+/* 脉冲发光 */
+@keyframes pulsGlow {
+  0%, 100% { 
+    box-shadow: 0 0 10px rgba(252, 211, 77, 0.5);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(252, 211, 77, 0.8);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* 漂浮效果 */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* 旋转 */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin 3s linear infinite;
+}
+
+/* ========================================
+   9. 毛玻璃效果
+   ======================================== */
+
+.glass-morphism {
+  background: rgba(28, 25, 23, 0.7);
+  backdrop-filter: blur(10px) saturate(150%);
+  border: 1px solid rgba(252, 211, 77, 0.1);
+}
+
+.glass-morphism-light {
+  background: rgba(41, 37, 36, 0.5);
+  backdrop-filter: blur(8px);
+}
+
+/* ========================================
+   10. 粒子背景（用CSS实现简单星空）
+   ======================================== */
+
+.particle-bg {
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(2px 2px at 20% 30%, white, transparent),
+    radial-gradient(2px 2px at 60% 70%, white, transparent),
+    radial-gradient(1px 1px at 50% 50%, white, transparent),
+    radial-gradient(1px 1px at 80% 10%, white, transparent),
+    radial-gradient(2px 2px at 90% 60%, white, transparent),
+    radial-gradient(1px 1px at 33% 80%, white, transparent);
+  background-size: 200% 200%;
+  animation: starTwinkle 4s ease-in-out infinite;
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+@keyframes starTwinkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.4; }
+}
+
+/* ========================================
+   11. 文字特效
+   ======================================== */
+
+/* 金色渐变文字 */
+.text-gradient-gold {
+  background: linear-gradient(135deg, #fde68a 0%, #fcd34d 50%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+
+/* 发光文字 */
+.text-glow {
+  text-shadow: 
+    0 0 10px rgba(252, 211, 77, 0.5),
+    0 0 20px rgba(252, 211, 77, 0.3),
+    0 0 30px rgba(252, 211, 77, 0.1);
+}
+
+/* 描边文字 */
+.text-stroke {
+  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.5);
+  paint-order: stroke fill;
+}
+
+/* ========================================
+   12. 工具类
+   ======================================== */
+
+/* 居中容器 */
+.center-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 全屏覆盖 */
+.full-cover {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+}
+
+/* 无选择 */
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* 硬件加速 */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}

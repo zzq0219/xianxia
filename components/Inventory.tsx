@@ -1,101 +1,139 @@
 import React, { useState } from 'react';
-import { PlayerProfile, CharacterCard, Skill, Equipment, EquipmentType, Rarity, GenderLock } from '../types';
 import { CARD_SELL_PRICES } from '../constants';
+import { CharacterCard, Equipment, EquipmentType, GenderLock, PetCard, PlayerProfile, Rarity, Skill } from '../types';
 import CharacterDetail from './CharacterDetail';
-import SkillDetail from './SkillDetail';
 import EquipmentDetail from './EquipmentDetail';
-import { getRarityBorderColor, getRarityBgColor, getRarityTextColor } from './rarityHelpers';
+import { getRarityBorderColor, getRarityTextColor } from './rarityHelpers';
+import SkillDetail from './SkillDetail';
 
 interface InventoryProps {
     playerProfile: PlayerProfile;
     setPlayerProfile: (profile: PlayerProfile) => void;
+    onViewPet: (pet: PetCard) => void;
 }
 
-type MainTab = '图鉴' | '通用技能库' | '装备库' | '日常道具';
+type MainTab = '图鉴' | '兽宠' | '通用技能库' | '装备库' | '日常道具';
 type CharacterSubTab = '男性角色' | '女性角色';
 type EquipmentSubTab = '武器' | '衣服' | '饰品';
+type PetSubTab = '雄性' | '雌性';
 type GenderFilter = 'All' | 'Male' | 'Female' | 'Universal';
 type SkillSubTab = '男性专用' | '女性专用' | '通用';
 type CardSort = 'default' | 'rarity';
 type EquipSort = 'default' | 'rarity';
 
 
+// 仙侠风格标签按钮
 const TabButton: React.FC<{ label: string; isActive: boolean; onClick: () => void }> = ({ label, isActive, onClick }) => (
     <button
         onClick={onClick}
-        className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors duration-200 ${
-            isActive 
-            ? 'bg-stone-700/80 text-amber-400 border-b-2 border-amber-400' 
-            : 'bg-transparent text-gray-400 hover:bg-stone-700/50 hover:text-gray-200'
-        }`}
+        className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition-all duration-300 ${isActive
+            ? 'bg-ink-800/90 text-gold-400 border-b-2 border-gold-500/60 shadow-[0_0_10px_rgba(180,149,106,0.15)]'
+            : 'bg-transparent text-ink-400 hover:bg-ink-800/50 hover:text-gold-300'
+            }`}
     >
         {label}
     </button>
 );
 
+// 仙侠风格排序按钮
 const SortButton: React.FC<{ label: string; isActive: boolean; onClick: () => void }> = ({ label, isActive, onClick }) => (
     <button
         onClick={onClick}
-        className={`px-3 py-1 text-xs rounded-full transition-colors ${
-            isActive ? 'bg-amber-600 text-white' : 'bg-stone-600 hover:bg-stone-500 text-gray-300'
-        }`}
+        className={`px-3 py-1 text-xs rounded transition-all duration-300 ${isActive
+            ? 'bg-gold-600/30 text-gold-300 border border-gold-500/40'
+            : 'bg-ink-700/60 hover:bg-ink-600/70 text-ink-300 hover:text-gold-300 border border-ink-600/50'
+            }`}
     >
         {label}
     </button>
 );
 
 
+// 仙侠风格角色卡片
 const CharacterCardItem: React.FC<{ card: CharacterCard }> = ({ card }) => (
-    <div className={`p-3 rounded-lg border-2 text-center h-full ${getRarityBorderColor(card.rarity)} ${getRarityBgColor(card.rarity, false)}`}>
-        <p className="font-bold font-serif text-white">{card.name}</p>
+    <div className={`ink-card p-3 rounded-lg text-center h-full relative ${getRarityBorderColor(card.rarity)}`}>
+        {/* 角落装饰 */}
+        <div className="absolute top-1 left-1 w-2 h-2 border-l border-t border-gold-500/25" />
+        <div className="absolute top-1 right-1 w-2 h-2 border-r border-t border-gold-500/25" />
+        <p className="font-bold font-elegant text-gold-300 flex items-center justify-center gap-1">
+            <span className="text-gold-500/50 text-xs">◆</span>
+            {card.name}
+        </p>
         <p className={`text-xs font-semibold ${getRarityTextColor(card.rarity)}`}>{card.realm}</p>
-        <p className="text-xs text-gray-400 mt-1 truncate">{card.title}</p>
+        <p className="text-xs text-ink-400 mt-1 truncate">{card.title}</p>
     </div>
 );
 
+// 性别图标
 const GenderIcon: React.FC<{ gender: GenderLock | undefined }> = ({ gender }) => {
     if (!gender || gender === 'Universal') return null;
     const icon = gender === 'Male' ? '♂' : '♀';
-    const color = gender === 'Male' ? 'text-sky-400' : 'text-pink-400';
+    const color = gender === 'Male' ? 'text-blue-400' : 'text-pink-400';
     return (
-        <div className={`absolute top-1 right-1 w-5 h-5 rounded-full bg-black/50 flex items-center justify-center font-bold ${color}`}>
+        <div className={`absolute top-1 right-1 w-5 h-5 rounded-full bg-ink-900/70 flex items-center justify-center font-bold ${color} border border-ink-700/50`}>
             {icon}
         </div>
     );
 };
 
+// 仙侠风格技能卡片
 const SkillItem: React.FC<{ skill: Skill }> = ({ skill }) => (
-     <div className={`relative p-3 rounded-lg border-2 h-full ${getRarityBorderColor(skill.rarity)} ${getRarityBgColor(skill.rarity, false)}`}>
+    <div className={`ink-card relative p-3 rounded-lg h-full ${getRarityBorderColor(skill.rarity)}`}>
         <GenderIcon gender={skill.genderLock} />
         <div className="flex justify-between items-baseline">
-            <h5 className={`font-bold ${getRarityTextColor(skill.rarity)}`}>{skill.name}</h5>
-            <span className="text-sm font-mono text-blue-400">{skill.cost} 真元</span>
+            <h5 className={`font-bold font-elegant ${getRarityTextColor(skill.rarity)}`}>
+                <span className="text-gold-500/40 mr-1">✧</span>{skill.name}
+            </h5>
+            <span className="text-sm font-mono text-blue-400 flex items-center gap-1">
+                <span className="text-blue-500/60">✦</span>{skill.cost} 真元
+            </span>
         </div>
-        <p className="text-sm text-gray-300 mt-1 line-clamp-2">{skill.description}</p>
+        <p className="text-sm text-ink-300 mt-1 line-clamp-2">{skill.description}</p>
     </div>
 );
 
+// 仙侠风格装备卡片
 const EquipmentItem: React.FC<{ item: Equipment }> = ({ item }) => (
-    <div className={`relative p-3 rounded-lg border-2 h-full ${getRarityBorderColor(item.rarity)} ${getRarityBgColor(item.rarity, false)}`}>
+    <div className={`ink-card relative p-3 rounded-lg h-full ${getRarityBorderColor(item.rarity)}`}>
         <GenderIcon gender={item.genderLock} />
-        <h5 className={`font-bold truncate ${getRarityTextColor(item.rarity)}`}>{item.name}</h5>
-        <div className="text-xs text-gray-300 mt-1 space-y-0.5">
+        <h5 className={`font-bold font-elegant truncate ${getRarityTextColor(item.rarity)}`}>
+            <span className="text-gold-500/40 mr-1">⚔</span>{item.name}
+        </h5>
+        <div className="text-xs text-ink-300 mt-1 space-y-0.5">
             {Object.entries(item.stats).map(([stat, value]) => (
-                <p key={stat}>{stat}: <span className="text-green-400">+{value}</span></p>
+                <p key={stat} className="flex items-center gap-1">
+                    <span className="text-gold-500/50">◇</span>
+                    {stat}: <span className="text-green-400">+{value}</span>
+                </p>
             ))}
         </div>
     </div>
 );
 
-const Inventory: React.FC<InventoryProps> = ({ playerProfile, setPlayerProfile }) => {
+// 仙侠风格宠物卡片
+const PetCardItem: React.FC<{ card: PetCard }> = ({ card }) => (
+    <div className={`ink-card relative p-3 rounded-lg text-center h-full ${getRarityBorderColor(card.rarity)}`}>
+        <GenderIcon gender={card.gender} />
+        <p className="font-bold font-elegant text-gold-300 flex items-center justify-center gap-1">
+            <span className="text-gold-500/50 text-xs">🐾</span>
+            {card.name}
+        </p>
+        <p className={`text-xs font-semibold ${getRarityTextColor(card.rarity)}`}>[{card.rarity}]</p>
+        <p className="text-xs text-ink-400 mt-1 truncate">{card.description}</p>
+    </div>
+);
+
+const Inventory: React.FC<InventoryProps> = ({ playerProfile, setPlayerProfile, onViewPet }) => {
     const [mainTab, setMainTab] = useState<MainTab>('图鉴');
     const [charSubTab, setCharSubTab] = useState<CharacterSubTab>('男性角色');
     const [equipSubTab, setEquipSubTab] = useState<EquipmentSubTab>('武器');
+    const [petSubTab, setPetSubTab] = useState<PetSubTab>('雄性');
     const [genderFilter, setGenderFilter] = useState<GenderFilter>('All');
     const [skillSubTab, setSkillSubTab] = useState<SkillSubTab>('男性专用');
     const [selectedCard, setSelectedCard] = useState<CharacterCard | null>(null);
     const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
     const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
+    // const [selectedPet, setSelectedPet] = useState<PetCard | null>(null); // This is now handled by App.tsx
     const [cardSort, setCardSort] = useState<CardSort>('default');
     const [equipSort, setEquipSort] = useState<EquipSort>('default');
     const [isSellMode, setIsSellMode] = useState<boolean>(false);
@@ -193,7 +231,7 @@ const Inventory: React.FC<InventoryProps> = ({ playerProfile, setPlayerProfile }
                     '女性专用': 'Female',
                     '通用': 'Universal'
                 };
-                
+
                 const filteredSkills = playerProfile.universalSkills.filter(
                     skill => skill.genderLock === genderLockMap[skillSubTab]
                 );
@@ -227,7 +265,7 @@ const Inventory: React.FC<InventoryProps> = ({ playerProfile, setPlayerProfile }
                                     </div>
                                 ) : null
                             ))}
-                             {filteredSkills.length === 0 && (
+                            {filteredSkills.length === 0 && (
                                 <div className="text-center text-gray-500 pt-10">
                                     <p>该分类下暂无技能。</p>
                                 </div>
@@ -236,8 +274,8 @@ const Inventory: React.FC<InventoryProps> = ({ playerProfile, setPlayerProfile }
                     </div>
                 );
             case '装备库':
-                 const typeMap: Record<EquipmentSubTab, EquipmentType> = { '武器': 'Weapon', '衣服': 'Armor', '饰品': 'Accessory' };
-                 const filteredEquip = playerProfile.equipmentInventory
+                const typeMap: Record<EquipmentSubTab, EquipmentType> = { '武器': 'Weapon', '衣服': 'Armor', '饰品': 'Accessory' };
+                const filteredEquip = playerProfile.equipmentInventory
                     .filter(e => e.type === typeMap[equipSubTab])
                     .filter(e => {
                         if (genderFilter === 'All') return true;
@@ -246,11 +284,11 @@ const Inventory: React.FC<InventoryProps> = ({ playerProfile, setPlayerProfile }
                     })
                     .sort((a, b) => {
                         if (equipSort === 'rarity') {
-                             return rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
+                            return rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
                         }
                         return 0;
                     });
-                 return (
+                return (
                     <div>
                         <div className="px-4 pt-2 flex justify-between items-center border-b border-stone-700 bg-stone-800/50 sticky top-0 backdrop-blur-sm z-10">
                             <div className="flex space-x-2">
@@ -258,7 +296,7 @@ const Inventory: React.FC<InventoryProps> = ({ playerProfile, setPlayerProfile }
                                 <TabButton label="衣服" isActive={equipSubTab === '衣服'} onClick={() => { setEquipSubTab('衣服'); setGenderFilter('All'); }} />
                                 <TabButton label="饰品" isActive={equipSubTab === '饰品'} onClick={() => { setEquipSubTab('饰品'); setGenderFilter('All'); }} />
                             </div>
-                             <div className="flex items-center gap-2 text-sm text-gray-400">
+                            <div className="flex items-center gap-2 text-sm text-gray-400">
                                 <span>排序:</span>
                                 <SortButton label="默认" isActive={equipSort === 'default'} onClick={() => setEquipSort('default')} />
                                 <SortButton label="稀有度" isActive={equipSort === 'rarity'} onClick={() => setEquipSort('rarity')} />
@@ -266,22 +304,22 @@ const Inventory: React.FC<InventoryProps> = ({ playerProfile, setPlayerProfile }
                         </div>
                         <div className="px-4 py-2 flex items-center gap-3 bg-stone-800/50 border-b border-stone-700">
                             <span className="text-sm font-semibold text-gray-400">筛选:</span>
-                             <SortButton label="全部" isActive={genderFilter === 'All'} onClick={() => setGenderFilter('All')} />
-                             <SortButton label="男性专用" isActive={genderFilter === 'Male'} onClick={() => setGenderFilter('Male')} />
-                             <SortButton label="女性专用" isActive={genderFilter === 'Female'} onClick={() => setGenderFilter('Female')} />
-                             <SortButton label="通用" isActive={genderFilter === 'Universal'} onClick={() => setGenderFilter('Universal')} />
+                            <SortButton label="全部" isActive={genderFilter === 'All'} onClick={() => setGenderFilter('All')} />
+                            <SortButton label="男性专用" isActive={genderFilter === 'Male'} onClick={() => setGenderFilter('Male')} />
+                            <SortButton label="女性专用" isActive={genderFilter === 'Female'} onClick={() => setGenderFilter('Female')} />
+                            <SortButton label="通用" isActive={genderFilter === 'Universal'} onClick={() => setGenderFilter('Universal')} />
                         </div>
                         <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                             {filteredEquip.map(item => (
-                                <button 
-                                    key={item.id} 
+                                <button
+                                    key={item.id}
                                     onClick={() => setSelectedEquipment(item)}
                                     className="text-left transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-lg"
                                 >
                                     <EquipmentItem item={item} />
                                 </button>
                             ))}
-                             {filteredEquip.length === 0 && (
+                            {filteredEquip.length === 0 && (
                                 <div className="col-span-full text-center text-gray-500 pt-10">
                                     <p>该分类下暂无装备。</p>
                                 </div>
@@ -297,28 +335,61 @@ const Inventory: React.FC<InventoryProps> = ({ playerProfile, setPlayerProfile }
                         <p className="mt-2">未来的丹药、材料等消耗品将在此处展示。</p>
                     </div>
                 );
+            case '兽宠':
+                const sortedPets = [...playerProfile.petCollection]
+                    .filter(p => p.gender === (petSubTab === '雄性' ? 'Male' : 'Female'))
+                    .sort((a, b) => rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity));
 
+                return (
+                    <div>
+                        <div className="px-4 pt-2 flex justify-between items-center border-b border-stone-700 bg-stone-800/50 sticky top-0 backdrop-blur-sm z-10">
+                            <div className="flex space-x-2">
+                                <TabButton label="雄性" isActive={petSubTab === '雄性'} onClick={() => setPetSubTab('雄性')} />
+                                <TabButton label="雌性" isActive={petSubTab === '雌性'} onClick={() => setPetSubTab('雌性')} />
+                            </div>
+                        </div>
+                        <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                            {sortedPets.map(pet => (
+                                <button
+                                    key={pet.id}
+                                    onClick={() => onViewPet(pet)}
+                                    className="relative text-left transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-lg"
+                                >
+                                    <PetCardItem card={pet} />
+                                </button>
+                            ))}
+                            {sortedPets.length === 0 && (
+                                <div className="col-span-full text-center text-gray-500 pt-10">
+                                    <p>该分类下暂无兽宠。</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
         }
     };
 
     return (
-        <div className="h-full flex flex-col font-serif text-gray-300">
-            <div className="flex-shrink-0 px-4 flex space-x-2 border-b border-stone-700">
-                <TabButton label="图鉴" isActive={mainTab === '图鉴'} onClick={() => setMainTab('图鉴')} />
-                <TabButton label="通用技能库" isActive={mainTab === '通用技能库'} onClick={() => setMainTab('通用技能库')} />
-                <TabButton label="装备库" isActive={mainTab === '装备库'} onClick={() => setMainTab('装备库')} />
-                <TabButton label="日常道具" isActive={mainTab === '日常道具'} onClick={() => setMainTab('日常道具')} />
+        <div className="h-full flex flex-col font-serif text-ink-300 bg-gradient-to-br from-ink-900/50 via-ink-950/70 to-ink-900/50">
+            {/* 标签栏 - 水墨风格 */}
+            <div className="flex-shrink-0 px-4 flex space-x-2 border-b border-gold-600/20 bg-ink-900/50">
+                <TabButton label="📖 图鉴" isActive={mainTab === '图鉴'} onClick={() => setMainTab('图鉴')} />
+                <TabButton label="🐾 兽宠" isActive={mainTab === '兽宠'} onClick={() => setMainTab('兽宠')} />
+                <TabButton label="📜 技能库" isActive={mainTab === '通用技能库'} onClick={() => setMainTab('通用技能库')} />
+                <TabButton label="⚔ 装备库" isActive={mainTab === '装备库'} onClick={() => setMainTab('装备库')} />
+                <TabButton label="📦 道具" isActive={mainTab === '日常道具'} onClick={() => setMainTab('日常道具')} />
             </div>
-            <div className="flex-grow overflow-y-auto bg-black/20 relative">
+            <div className="flex-grow overflow-y-auto bg-ink-950/30 relative">
                 {renderContent()}
             </div>
-            
+
             {selectedCard && (
                 <CharacterDetail
                     card={selectedCard}
                     onClose={() => setSelectedCard(null)}
                     playerProfile={playerProfile}
                     setPlayerProfile={setPlayerProfile}
+                    onViewPet={onViewPet}
                 />
             )}
             {selectedSkill && (
@@ -333,29 +404,41 @@ const Inventory: React.FC<InventoryProps> = ({ playerProfile, setPlayerProfile }
                     onClose={() => setSelectedEquipment(null)}
                 />
             )}
+            {/* 出售确认弹窗 - 仙侠风格 */}
             {cardToSell && (
-                <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 animate-fade-in">
-                    <div className="bg-stone-800 border border-stone-600 rounded-xl w-full max-w-md shadow-2xl p-6 text-center font-serif">
-                        <h3 className="text-xl font-bold text-white mb-2">确认出售</h3>
-                        <p className="text-gray-300">
+                <div className="fixed inset-0 bg-ink-950/85 z-50 flex items-center justify-center p-4 animate-fade-in backdrop-blur-sm">
+                    <div className="ink-card rounded-xl w-full max-w-md shadow-2xl p-6 text-center font-serif relative xianxia-frame">
+                        {/* 装饰 */}
+                        <div className="absolute top-3 left-3 w-4 h-4 border-l-2 border-t-2 border-gold-500/30" />
+                        <div className="absolute top-3 right-3 w-4 h-4 border-r-2 border-t-2 border-gold-500/30" />
+                        <div className="absolute bottom-3 left-3 w-4 h-4 border-l-2 border-b-2 border-gold-500/30" />
+                        <div className="absolute bottom-3 right-3 w-4 h-4 border-r-2 border-b-2 border-gold-500/30" />
+
+                        <h3 className="text-xl font-bold text-gold-400 mb-2 font-brush tracking-wider">
+                            <span className="text-gold-500/50 mr-2">〓</span>
+                            确认出售
+                            <span className="text-gold-500/50 ml-2">〓</span>
+                        </h3>
+                        <p className="text-ink-300">
                             你确定要出售 <span className={`font-semibold ${getRarityTextColor(cardToSell.rarity)}`}>[{cardToSell.rarity}] {cardToSell.name}</span> 吗?
                         </p>
-                        <p className="text-lg text-green-400 font-bold my-4">
+                        <p className="text-lg text-gold-400 font-bold my-4 flex items-center justify-center gap-2">
+                            <span className="text-gold-500">◈</span>
                             你将获得 {CARD_SELL_PRICES[cardToSell.rarity] || 0} 灵石
                         </p>
-                        {sellError && <p className="text-red-500 text-sm mb-4 animate-shake">{sellError}</p>}
+                        {sellError && <p className="text-cinnabar-400 text-sm mb-4 animate-shake">{sellError}</p>}
                         <div className="flex justify-center gap-4 mt-6">
                             <button
                                 onClick={() => setCardToSell(null)}
-                                className="px-6 py-2 bg-stone-600 hover:bg-stone-500 rounded-md font-semibold"
+                                className="px-6 py-2 bg-ink-700/80 hover:bg-ink-600/80 rounded-lg font-semibold text-ink-300 hover:text-gold-300 border border-ink-600/50 hover:border-gold-500/30 transition-all duration-300"
                             >
                                 取消
                             </button>
                             <button
                                 onClick={handleConfirmSell}
-                                className="px-6 py-2 bg-red-600 text-white hover:bg-red-500 rounded-md font-bold"
+                                className="px-6 py-2 bg-gradient-to-r from-cinnabar-600 to-cinnabar-500 text-white hover:from-cinnabar-500 hover:to-cinnabar-400 rounded-lg font-bold border border-cinnabar-400/50 transition-all duration-300"
                             >
-                                确认
+                                确认出售
                             </button>
                         </div>
                     </div>

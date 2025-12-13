@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iframe Srcdoc 测试环境</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #e9eef2;
+      padding: 20px;
+      margin: 0;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    .iframe-container {
+      max-width: 800px;
+      margin: 20px auto;
+      border: 2px solid #bdc3c7;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden; /* 配合 iframe 的圆角 */
+    }
+    iframe {
+      width: 100%;
+      border: none;
+      display: block; /* 移除 iframe 底部默认的空隙 */
+      /* 我们不在这里设置固定高度，以便观察内容自适应效果 */
+    }
+    .controls {
+      text-align: center;
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 15px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 0 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Iframe Srcdoc 测试环境</h1>
+  <p>下面的 `iframe` 使用 <code>srcdoc</code> 属性来加载其内容。`iframe` 自身没有设置固定高度，它会根据内部内容的高度自动调整。</p>
+
+  <div class="iframe-container">
+    <iframe id="my-iframe" title="Srcdoc Content"></iframe>
+  </div>
+
+  <div class="controls">
+    <p>点击按钮，动态修改 Iframe 内部的内容，观察其高度变化。</p>
+    <button onclick="addContent()">增加内容</button>
+    <button onclick="removeContent()">移除内容</button>
+  </div>
+
+  <script>
+    // 异步函数：获取 iframe 内容并设置 srcdoc
+    async function setupIframe() {
+      try {
+        // 1. 使用 fetch API 读取 iframe-content.html 文件的内容
+        const response = await fetch('iframe-content.html');
+        if (!response.ok) {
+          throw new Error('无法加载 iframe-content.html. 请确保你正在使用本地服务器 (如 VS Code Live Server) 运行此文件。');
+        }
+        const htmlContent = await response.text();
+        
+        // 2. 将读取到的 HTML 字符串赋值给 iframe 的 srcdoc 属性
+        const iframe = document.getElementById('my-iframe');
+        iframe.srcdoc = htmlContent;
+
+        // 3. (可选但推荐) 使用 ResizeObserver 自动调整 iframe 高度
+        iframe.onload = () => {
+          const iframeBody = iframe.contentWindow.document.body;
+          const resizeObserver = new ResizeObserver(() => {
+            // 设置 iframe 的高度等于其内部内容滚动的高度
+            iframe.style.height = iframeBody.scrollHeight + 'px';
+          });
+          resizeObserver.observe(iframeBody);
+        };
+        
+      } catch (error) {
+        console.error(error);
+        alert(error.message);
+      }
+    }
+
+    // 在页面加载时执行
+    document.addEventListener('DOMContentLoaded', setupIframe);
+
+    // --- 交互功能 ---
+    function addContent() {
+      const iframeDoc = document.getElementById('my-iframe').contentWindow.document;
+      if (iframeDoc) {
+        const p = iframeDoc.createElement('p');
+        p.textContent = '这是新增加的一段内容。 ' + new Date().toLocaleTimeString();
+        iframeDoc.body.appendChild(p);
+      }
+    }
+
+    function removeContent() {
+      const iframeDoc = document.getElementById('my-iframe').contentWindow.document;
+      if (iframeDoc) {
+        const paragraphs = iframeDoc.getElementsByTagName('p');
+        if (paragraphs.length > 2) { // 保留前两段基础说明
+          iframeDoc.body.removeChild(paragraphs[paragraphs.length - 1]);
+        }
+      }
+    }
+  </script>
+
+</body>
+</html>

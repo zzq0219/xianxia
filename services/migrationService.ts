@@ -1,14 +1,59 @@
-import { GameState } from '../types';
 import { CURRENT_GAME_VERSION } from '../constants';
+import { GameState } from '../types';
 
 type Migration = (state: any) => GameState;
 
 // 迁移脚本的注册表
 const MIGRATIONS: Record<number, Migration> = {
-    // 示例：从版本1迁移到版本2
-    // 2: (state) => {
-    //   return { ...state, newFeature: 'default value' };
-    // },
+    // 版本2：记忆系统分类重构
+    2: (state) => {
+        console.log('迁移记忆系统分类...');
+        
+        // 旧分类到新分类的映射
+        const categoryMapping: Record<string, string> = {
+            '问诊': '医馆',
+            '交互': '其他',
+        };
+        
+        // 迁移memories
+        if (state.memories) {
+            const newMemories: any = {
+                '探索': state.memories['探索'] || [],
+                '战斗': state.memories['战斗'] || [],
+                '商城': [],
+                '医馆': state.memories['问诊'] || [],
+                '悬赏': state.memories['悬赏'] || [],
+                '培育': state.memories['培育'] || [],
+                '商业': state.memories['商业'] || [],
+                '声望': [],
+                '公告': [],
+                '其他': [...(state.memories['交互'] || []), ...(state.memories['其他'] || [])],
+            };
+            state.memories = newMemories;
+        }
+        
+        // 迁移memorySummaries
+        if (state.memorySummaries) {
+            const newSummaries: any = {
+                '探索': state.memorySummaries['探索'] || { small: [], large: [] },
+                '战斗': state.memorySummaries['战斗'] || { small: [], large: [] },
+                '商城': { small: [], large: [] },
+                '医馆': state.memorySummaries['问诊'] || { small: [], large: [] },
+                '悬赏': state.memorySummaries['悬赏'] || { small: [], large: [] },
+                '培育': state.memorySummaries['培育'] || { small: [], large: [] },
+                '商业': state.memorySummaries['商业'] || { small: [], large: [] },
+                '声望': { small: [], large: [] },
+                '公告': { small: [], large: [] },
+                '其他': {
+                    small: [...(state.memorySummaries['交互']?.small || []), ...(state.memorySummaries['其他']?.small || [])],
+                    large: [...(state.memorySummaries['交互']?.large || []), ...(state.memorySummaries['其他']?.large || [])],
+                },
+            };
+            state.memorySummaries = newSummaries;
+        }
+        
+        return state;
+    },
 };
 
 /**

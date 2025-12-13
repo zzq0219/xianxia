@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { PlayerProfile, CharacterRelationship } from '../types';
+import React, { useEffect, useState } from 'react';
+import { generateTelepathyReply } from '../services/tavernService';
+import { CharacterRelationship, PlayerProfile } from '../types';
 
 interface TelepathyModalProps {
     isOpen: boolean;
@@ -40,27 +41,12 @@ const TelepathyModal: React.FC<TelepathyModalProps> = ({ isOpen, onClose, player
             setInputText('');
             setIsAiResponding(true);
 
-            const systemInstruction = `你正在扮演角色 ${selectedContact.name}。请以 ${selectedContact.name} 的身份和口吻，简洁地回复玩家。你的回复应该符合仙侠世界的背景和你的角色设定。`;
-            
-            const history = newMessages.slice(-5).map(msg => `${msg.sender === 'user' ? playerProfile.name : selectedContact.name}: ${msg.text}`).join('\n');
-
-            const prompt = `
-对话历史:
-${history}
-
-玩家 (${playerProfile.name}) 的最新消息:
-"${inputText}"
-
-现在，请以 ${selectedContact.name} 的身份回复。
-`;
-
             try {
-                const aiResponse = await window.TavernHelper.generateRaw({
-                    ordered_prompts: [
-                        { role: 'system', content: systemInstruction },
-                        { role: 'user', content: prompt }
-                    ]
-                });
+                const aiResponse = await generateTelepathyReply(
+                    playerProfile,
+                    selectedContact,
+                    newMessages
+                );
                 setMessages(prev => [...prev, { sender: 'ai', text: aiResponse }]);
             } catch (error) {
                 console.error("传音失败:", error);

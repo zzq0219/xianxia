@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { BattleParticipant, StatusEffect } from '../types';
+import React, { useEffect, useState } from 'react';
+import { BattleParticipant } from '../types';
 import { getRarityTextColor } from './rarityHelpers';
-import StatusEffectDetailModal from './StatusEffectDetailModal';
+import StatusEffectsListModal from './StatusEffectsListModal';
 
 interface CharacterCardDisplayProps {
     participant: BattleParticipant;
@@ -10,50 +10,38 @@ interface CharacterCardDisplayProps {
 }
 
 const StatBar: React.FC<{ value: number; maxValue: number; color: string; label: string }> = ({ value, maxValue, color, label }) => {
-  const percentage = maxValue > 0 ? (value / maxValue) * 100 : 0;
-  return (
-    <div className="relative">
-      <div className="flex justify-between items-center mb-0.5 text-white z-10 relative px-1">
-        <span className="text-[10px] font-bold drop-shadow-sm shadow-black">{label}</span>
-        <span className="text-[10px] font-mono drop-shadow-sm shadow-black">{`${value}/${maxValue}`}</span>
-      </div>
-      <div className="w-full bg-stone-900/50 rounded-full h-2.5 border border-stone-600/50 shadow-inner shadow-black/50">
-        <div className={`${color} h-full rounded-full transition-all duration-500 ease-in-out`} style={{ width: `${percentage}%` }}></div>
-      </div>
-    </div>
-  );
-};
+    const percentage = maxValue > 0 ? (value / maxValue) * 100 : 0;
+    const isLowHealth = label === '气血' && percentage < 30;
 
-const StatusEffectIcon: React.FC<{ effect: StatusEffect; onClick: () => void }> = ({ effect, onClick }) => {
-    const getIcon = (name: string) => {
-        if (name.includes('提升') || name.includes('盾')) return '⬆️';
-        if (name.includes('下降') || name.includes('弱')) return '⬇️';
-        if (name.includes('毒') || name.includes('灼烧')) return '☠️';
-        if (name.includes('晕') || name.includes('锁') || name.includes('混乱')) return '😵';
-        return '✨';
-    }
     return (
-        <button 
-            onClick={onClick}
-            className="w-7 h-7 bg-stone-900/70 rounded-full flex items-center justify-center text-sm border-2 border-stone-500 hover:border-amber-400 transition-colors" 
-            title={effect.name}
-        >
-            {getIcon(effect.name)}
-        </button>
+        <div className="relative">
+            <div className="flex justify-between items-center mb-0.5 text-ink-200 z-10 relative px-1">
+                <span className="text-[10px] font-bold tracking-wide">{label}</span>
+                <span className={`text-[10px] font-mono ${isLowHealth ? 'text-cinnabar-400 animate-pulse-soft' : ''}`}>{`${value}/${maxValue}`}</span>
+            </div>
+            <div className="w-full bg-ink-900/70 rounded h-2 border border-gold-600/20 overflow-hidden">
+                <div className={`${color} h-full rounded transition-all duration-500 ease-in-out relative ${isLowHealth ? 'animate-pulse-soft' : ''}`} style={{ width: `${percentage}%` }}>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                </div>
+            </div>
+        </div>
     );
-}
+};
 
 const CharacterCardDisplay: React.FC<CharacterCardDisplayProps> = ({ participant, isPlayer, wasHit }) => {
     const { card, currentHp, currentMp, statusEffects } = participant;
     const [isAnimating, setIsAnimating] = useState(false);
-    const [activeStatusDetail, setActiveStatusDetail] = useState<StatusEffect | null>(null);
+    const [showStatusList, setShowStatusList] = useState(false);
 
-    const borderColor = isPlayer ? 'border-sky-500/70' : 'border-red-500/70';
+    // 水墨风格边框 - 己方淡金，敌方朱砂
+    const borderColor = isPlayer
+        ? 'border-gold-500/50 shadow-[0_0_15px_rgba(184,149,106,0.2)]'
+        : 'border-cinnabar-500/50 shadow-[0_0_15px_rgba(166,61,61,0.2)]';
 
     useEffect(() => {
         if (wasHit) {
             setIsAnimating(true);
-            const timer = setTimeout(() => setIsAnimating(false), 500); // Animation duration
+            const timer = setTimeout(() => setIsAnimating(false), 500);
             return () => clearTimeout(timer);
         }
     }, [wasHit]);
@@ -62,25 +50,33 @@ const CharacterCardDisplay: React.FC<CharacterCardDisplayProps> = ({ participant
 
     return (
         <>
-            {activeStatusDetail && <StatusEffectDetailModal effect={activeStatusDetail} onClose={() => setActiveStatusDetail(null)} />}
-            <div className={`w-full max-w-[280px] bg-stone-800/80 rounded-lg border-2 ${borderColor} shadow-lg shadow-black/50 backdrop-blur-sm transition-all duration-300 ${animationClasses} p-3`}>
+            {showStatusList && <StatusEffectsListModal effects={statusEffects} onClose={() => setShowStatusList(false)} />}
+            <div className={`w-full max-w-[280px] ink-card rounded-lg border ${borderColor} backdrop-blur-sm transition-all duration-300 ${animationClasses} p-3 relative`}>
+                {/* 角落装饰 */}
+                <div className="absolute top-1 left-1 w-2 h-2 border-l border-t border-gold-500/30" />
+                <div className="absolute top-1 right-1 w-2 h-2 border-r border-t border-gold-500/30" />
+                <div className="absolute bottom-1 left-1 w-2 h-2 border-l border-b border-gold-500/30" />
+                <div className="absolute bottom-1 right-1 w-2 h-2 border-r border-b border-gold-500/30" />
+
                 <div className="text-center mb-2">
-                    <h2 className="text-lg font-bold text-white font-serif">{card.name}</h2>
+                    <h2 className="text-lg font-bold text-gold-400 font-serif tracking-wider ink-title">{card.name}</h2>
                     <p className={`font-medium text-sm ${getRarityTextColor(card.rarity)}`}>{card.realm}</p>
                 </div>
                 <div className="space-y-2">
-                    <StatBar value={currentHp} maxValue={card.baseAttributes.maxHp} color="bg-gradient-to-r from-red-600 to-red-400 border-r border-black/20" label="气血" />
-                    <StatBar value={currentMp} maxValue={card.baseAttributes.maxMp} color="bg-gradient-to-r from-blue-600 to-blue-400 border-r border-black/20" label="真元" />
+                    <StatBar value={currentHp} maxValue={card.baseAttributes.maxHp} color="bg-gradient-to-r from-cinnabar-600 to-cinnabar-400" label="气血" />
+                    <StatBar value={currentMp} maxValue={card.baseAttributes.maxMp} color="bg-gradient-to-r from-ink-600 via-ink-500 to-ink-400" label="真元" />
                 </div>
-                 {statusEffects.length > 0 ? (
-                    <div className="mt-3 h-8 flex items-center justify-center gap-2 flex-wrap">
-                        {statusEffects.map((effect, i) => <StatusEffectIcon key={`${effect.name}-${i}`} effect={effect} onClick={() => setActiveStatusDetail(effect)} />)}
-                    </div>
-                ) : (
-                     <div className="mt-3 h-8 flex items-center justify-center text-xs text-gray-500">
-                        无特殊状态
-                    </div>
-                 )}
+                <div className="mt-3 h-8 flex items-center justify-center">
+                    <button
+                        onClick={() => setShowStatusList(true)}
+                        className="px-3 py-1 bg-ink-800/80 rounded text-xs border border-gold-600/30 hover:border-gold-500/50 hover:bg-ink-700/80 transition-all duration-300 flex items-center gap-1.5 text-ink-300 hover:text-gold-400"
+                    >
+                        <span>状态</span>
+                        {statusEffects.length > 0 && (
+                            <span className="bg-gold-600 text-ink-900 px-1.5 rounded font-bold">{statusEffects.length}</span>
+                        )}
+                    </button>
+                </div>
             </div>
         </>
     );

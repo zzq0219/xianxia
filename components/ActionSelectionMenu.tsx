@@ -1,11 +1,11 @@
 
 
 import React from 'react';
-import { BattleParticipant } from '../types';
+import { BattleParticipant, Skill } from '../types';
 
 interface ActionSelectionMenuProps {
     activeCard: BattleParticipant;
-    onAction: (action: string) => void;
+    onAction: (action: string | Skill) => void;
     onClose: () => void;
 }
 
@@ -37,7 +37,7 @@ const ActionSelectionMenu: React.FC<ActionSelectionMenuProps> = ({ activeCard, o
     const { card } = activeCard;
 
     return (
-        <div 
+        <div
             className="fixed inset-0 bg-black/70 z-30 flex items-end justify-center"
             onClick={onClose}
         >
@@ -51,16 +51,25 @@ const ActionSelectionMenu: React.FC<ActionSelectionMenuProps> = ({ activeCard, o
                         description="造成少量物理伤害"
                         onClick={() => onAction('普通攻击')}
                     />
-                    
+
                     {card.skills.map((skill) => skill && (
                         <ActionButton
                             key={skill.id}
                             title={skill.name}
                             description={skill.mechanicsDescription}
                             cost={skill.cost}
-                            onClick={() => onAction(skill.name)}
+                            onClick={() => onAction(skill)}
                         />
                     ))}
+                    {activeCard.pet && (
+                        <ActionButton
+                            key={activeCard.pet.skill.id}
+                            title={activeCard.pet.skill.name}
+                            description={activeCard.pet.skill.mechanicsDescription}
+                            cost={activeCard.pet.skill.cost}
+                            onClick={() => onAction(activeCard.pet!.skill)}
+                        />
+                    )}
                 </div>
             </div>
         </div>

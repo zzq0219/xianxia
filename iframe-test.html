@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iframe 高度自适应测试</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f0f2f5;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      color: #1a1a1a;
+    }
+    .instructions {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+      max-width: 800px;
+      text-align: left;
+      line-height: 1.6;
+    }
+    .instructions code {
+      background-color: #eef;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+    .iframe-container {
+      width: 100%;
+      max-width: 800px;
+      border: 2px solid #ccc;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden; /* Ensures content respects the border-radius */
+    }
+    iframe {
+      width: 100%;
+      border: none;
+      display: block; /* Removes default bottom margin */
+      transition: height 0.2s ease-in-out; /* Smooth height transition */
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Iframe 高度自适应测试页面</h1>
+
+  <div class="instructions">
+    <p><strong>使用说明：</strong></p>
+    <ol>
+      <li>请确保您的前端应用正在本地开发服务器上运行 (通常是 <code>http://localhost:5173</code>)。</li>
+      <li>下方的 <code>iframe</code> 会加载您的应用。</li>
+      <li>当您的应用内容发生变化时，<code>iframe</code> 的高度应该会自动调整以适应内容，没有内部滚动条。</li>
+      <li>如果 <code>iframe</code> 高度没有变化，请检查浏览器控制台是否有报错信息。</li>
+    </ol>
+  </div>
+
+  <div class="iframe-container">
+    <iframe id="app-iframe" src="http://localhost:3000" title="React App Test"></iframe>
+  </div>
+
+  <script>
+    const iframe = document.getElementById('app-iframe');
+
+    window.addEventListener('message', (event) => {
+      // 安全性检查：可以验证 event.origin 是否来自预期的源
+      // if (event.origin !== 'http://localhost:5173') {
+      //   return;
+      // }
+
+      const data = event.data;
+
+      // 检查消息类型是否是我们约定的类型
+      if (data && data.type === 'set-frame-height' && typeof data.height === 'number') {
+        console.log(`收到新的高度: ${data.height}px`);
+        // 设置 iframe 的高度
+        iframe.style.height = data.height + 'px';
+      }
+    });
+  </script>
+
+</body>
+</html>

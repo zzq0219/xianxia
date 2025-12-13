@@ -62,28 +62,81 @@ export const updateObjectiveProgress = (profile: PlayerProfile, questId: string,
 };
 
 /**
+ * 检查任务是否完成所有目标
+ * @param quest 要检查的任务
+ * @returns 是否所有目标都已完成
+ */
+export const isQuestCompleted = (quest: Quest): boolean => {
+    return quest.objectives.every(obj => obj.isCompleted);
+};
+
+/**
+ * 将完成的任务标记为可领取状态
+ * @param profile 玩家的个人档案
+ * @param questId 要标记的任务ID
+ * @returns 更新后的玩家个人档案
+ */
+export const markQuestClaimable = (profile: PlayerProfile, questId: string): PlayerProfile => {
+    const quest = profile.quests.find(q => q.id === questId);
+    if (!quest) return profile;
+    
+    // 检查所有目标是否完成
+    if (!isQuestCompleted(quest)) {
+        return profile;
+    }
+    
+    return updateQuestStatus(profile, questId, 'Claimable');
+};
+
+/**
+ * 领取任务奖励
+ * @param profile 玩家的个人档案
+ * @param questId 要领取的任务ID
+ * @returns 更新后的玩家个人档案
+ */
+export const claimQuestRewards = (profile: PlayerProfile, questId: string): PlayerProfile => {
+    const quest = profile.quests.find(q => q.id === questId);
+    if (!quest || quest.status !== 'Claimable') return profile;
+
+    let newProfile = { ...profile };
+
+    // 发放灵石奖励
+    if (quest.rewards.spiritStones) {
+        newProfile.spiritStones += quest.rewards.spiritStones;
+    }
+    
+    // 发放声望奖励
+    if (quest.rewards.reputation) {
+        newProfile.reputation.score += quest.rewards.reputation;
+    }
+    
+    // 发放物品奖励
+    if (quest.rewards.items && quest.rewards.items.length > 0) {
+        quest.rewards.items.forEach(item => {
+            if ('stats' in item) {
+                // 这是装备
+                newProfile.equipmentInventory.push({ ...item, id: `${item.id}_${Date.now()}_${Math.random()}` });
+            } else if ('cost' in item) {
+                // 这是技能
+                newProfile.universalSkills.push(item);
+            }
+        });
+    }
+
+    // 更新任务状态为已完成
+    newProfile = updateQuestStatus(newProfile, questId, 'Completed');
+
+    return newProfile;
+};
+
+/**
+ * @deprecated 使用 markQuestClaimable 和 claimQuestRewards 代替
  * 完成一个任务，发放奖励，并更新任务状态。
  * @param profile 玩家的个人档案。
  * @param questId 要完成的任务ID。
  * @returns 更新后的玩家个人档案。
  */
 export const completeQuest = (profile: PlayerProfile, questId: string): PlayerProfile => {
-    const quest = profile.quests.find(q => q.id === questId);
-    if (!quest) return profile;
-
-    let newProfile = { ...profile };
-
-    // 发放奖励
-    if (quest.rewards.spiritStones) {
-        newProfile.spiritStones += quest.rewards.spiritStones;
-    }
-    if (quest.rewards.reputation) {
-        newProfile.reputation.score += quest.rewards.reputation;
-    }
-    // 注意：物品奖励需要更复杂的逻辑来处理库存，此处暂不实现
-
-    // 更新任务状态
-    newProfile = updateQuestStatus(newProfile, questId, 'Completed');
-
-    return newProfile;
+    // 向后兼容：直接标记为可领取状态
+    return markQuestClaimable(profile, questId);
 };

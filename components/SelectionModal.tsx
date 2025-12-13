@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { PlayerProfile, CharacterCard, Equipment, Skill, EquipmentType, Rarity } from '../types';
+import { CharacterCard, Equipment, EquipmentType, PetCard, PlayerProfile, Skill } from '../types';
 import { getRarityTextColor } from './rarityHelpers';
 
-type SelectionState = 
+type SelectionState =
     | { type: 'equipment'; slot: keyof CharacterCard['equipment']; slotType: EquipmentType; }
-    | { type: 'skill'; slotIndex: 2 | 3; };
+    | { type: 'skill'; slotIndex: 2 | 3; }
+    | { type: 'pet' };
 
 interface SelectionModalProps {
     playerProfile: PlayerProfile;
@@ -13,6 +14,7 @@ interface SelectionModalProps {
     onClose: () => void;
     onEquip: (slot: keyof CharacterCard['equipment'], item: Equipment) => void;
     onLearnSkill: (slotIndex: 2 | 3, skill: Skill) => void;
+    onEquipPet: (pet: PetCard) => void;
 }
 
 const getStatName = (stat: string) => {
@@ -27,14 +29,15 @@ const formatStatValue = (stat: string, value: number) => {
     if (stat === 'critRate' || stat === 'critDmg') {
         return `${(value * 100).toFixed(0)}%`;
     }
-    return value > 0 ? `+${value}`: `${value}`;
+    return value > 0 ? `+${value}` : `${value}`;
 }
 
-const SelectionModal: React.FC<SelectionModalProps> = ({ playerProfile, card, selectionState, onClose, onEquip, onLearnSkill }) => {
-    const [previewItem, setPreviewItem] = useState<Equipment | Skill | null>(null);
+const SelectionModal: React.FC<SelectionModalProps> = ({ playerProfile, card, selectionState, onClose, onEquip, onLearnSkill, onEquipPet }) => {
+    const [previewItem, setPreviewItem] = useState<Equipment | Skill | PetCard | null>(null);
 
     const isEquipmentSelection = (state: SelectionState): state is { type: 'equipment', slot: keyof CharacterCard['equipment'], slotType: EquipmentType } => state.type === 'equipment';
     const isSkillSelection = (state: SelectionState): state is { type: 'skill', slotIndex: 2 | 3 } => state.type === 'skill';
+    const isPetSelection = (state: SelectionState): state is { type: 'pet' } => state.type === 'pet';
 
     const renderEquipmentDetails = (item: Equipment, currentItem?: Equipment | null) => (
         <div>
@@ -48,15 +51,15 @@ const SelectionModal: React.FC<SelectionModalProps> = ({ playerProfile, card, se
                         <div key={stat} className="flex justify-between items-center text-sm">
                             <span className="text-gray-300">{getStatName(stat)}</span>
                             <div className="flex items-center gap-2">
-                               {currentItem && <span className="text-gray-500">{formatStatValue(stat, currentValue)}</span>}
-                               <span className={`font-semibold ${diff > 0 ? 'text-green-400' : diff < 0 ? 'text-red-400' : 'text-white'}`}>
-                                   {formatStatValue(stat, value)}
+                                {currentItem && <span className="text-gray-500">{formatStatValue(stat, currentValue)}</span>}
+                                <span className={`font-semibold ${diff > 0 ? 'text-green-400' : diff < 0 ? 'text-red-400' : 'text-white'}`}>
+                                    {formatStatValue(stat, value)}
                                 </span>
-                               {currentItem && diff !== 0 && (
-                                   <span className={`text-xs w-16 text-center font-mono ${diff > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                       ({diff > 0 ? '+' : ''}{diff})
-                                   </span>
-                               )}
+                                {currentItem && diff !== 0 && (
+                                    <span className={`text-xs w-16 text-center font-mono ${diff > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                        ({diff > 0 ? '+' : ''}{diff})
+                                    </span>
+                                )}
                             </div>
                         </div>
                     );
@@ -64,11 +67,11 @@ const SelectionModal: React.FC<SelectionModalProps> = ({ playerProfile, card, se
             </div>
         </div>
     );
-    
+
     const renderSkillDetails = (item: Skill) => (
-         <div>
+        <div>
             <div className="flex justify-between items-baseline mb-2">
-                 <h3 className="text-lg font-bold text-white flex items-baseline gap-2">
+                <h3 className="text-lg font-bold text-white flex items-baseline gap-2">
                     <span className={`${getRarityTextColor(item.rarity)}`}>{item.name}</span>
                     <span className={`text-base font-medium ${getRarityTextColor(item.rarity)}`}>
                         [{item.rarity}]
@@ -82,10 +85,26 @@ const SelectionModal: React.FC<SelectionModalProps> = ({ playerProfile, card, se
         </div>
     );
 
+    const renderPetDetails = (item: PetCard) => (
+        <div>
+            <h3 className={`text-lg font-bold ${getRarityTextColor(item.rarity)}`}>{item.name}</h3>
+            <p className="text-sm text-gray-400 mb-2">({item.gender === 'Male' ? '雄性' : '雌性'})</p>
+            <p className="text-sm text-gray-300 mb-4">{item.description}</p>
+            <div className="bg-stone-800/50 p-3 rounded-md">
+                <h4 className="font-semibold text-amber-400 mb-2">技能: {item.skill.name}</h4>
+                <p className="text-sm font-semibold text-amber-300">{item.skill.mechanicsDescription}</p>
+                <p className="text-xs text-gray-400 mt-1">{item.skill.description}</p>
+            </div>
+        </div>
+    );
+
     const getTitle = () => {
         if (isEquipmentSelection(selectionState)) {
-             const labels: Record<string, string> = { weapon: '武器', armor: '衣服', accessory1: '配饰', accessory2: '配饰' };
-             return `选择${labels[selectionState.slot]}`;
+            const labels: Record<string, string> = { weapon: '武器', armor: '衣服', accessory1: '配饰', accessory2: '配饰' };
+            return `选择${labels[selectionState.slot]}`;
+        }
+        if (isPetSelection(selectionState)) {
+            return "选择出战兽宠";
         }
         return "选择通用技能";
     }
@@ -98,9 +117,13 @@ const SelectionModal: React.FC<SelectionModalProps> = ({ playerProfile, card, se
             const learnedSkillIds = new Set(card.skills.map(s => s?.id).filter(Boolean));
             return playerProfile.universalSkills.filter(s => !learnedSkillIds.has(s.id) && (s.genderLock === 'Universal' || s.genderLock === card.gender));
         }
+        if (isPetSelection(selectionState)) {
+            const equippedPetIds = new Set([...playerProfile.maleParty, ...playerProfile.femaleParty].map(c => c.pet?.id).filter(Boolean));
+            return playerProfile.petCollection.filter(p => p.gender === card.gender && !equippedPetIds.has(p.id));
+        }
         return [];
     }
-    
+
     const items = getItems();
     const currentEquippedItem = isEquipmentSelection(selectionState) ? card.equipment[selectionState.slot] : null;
 
@@ -129,30 +152,33 @@ const SelectionModal: React.FC<SelectionModalProps> = ({ playerProfile, card, se
                                 </button>
                             ))
                         ) : (
-                             <p className="p-4 text-sm text-gray-500">无可用选项</p>
+                            <p className="p-4 text-sm text-gray-500">无可用选项</p>
                         )}
                     </div>
                     <div className="w-3/5 p-4 flex flex-col justify-between">
-                       <div>
-                           {!previewItem ? (
-                               <div className="text-center text-gray-500 pt-10">
-                                   <p>从左侧列表选择一项以预览详情</p>
-                               </div>
-                           ) : (
-                               isEquipmentSelection(selectionState) 
-                               ? renderEquipmentDetails(previewItem as Equipment, currentEquippedItem)
-                               : renderSkillDetails(previewItem as Skill)
-                           )}
-                       </div>
+                        <div>
+                            {!previewItem ? (
+                                <div className="text-center text-gray-500 pt-10">
+                                    <p>从左侧列表选择一项以预览详情</p>
+                                </div>
+                            ) : (
+                                isEquipmentSelection(selectionState)
+                                    ? renderEquipmentDetails(previewItem as Equipment, currentEquippedItem)
+                                    : isPetSelection(selectionState)
+                                        ? renderPetDetails(previewItem as PetCard)
+                                        : renderSkillDetails(previewItem as Skill)
+                            )}
+                        </div>
                         {previewItem && (
-                             <button
+                            <button
                                 onClick={() => {
                                     if (isEquipmentSelection(selectionState)) onEquip(selectionState.slot, previewItem as Equipment);
                                     if (isSkillSelection(selectionState)) onLearnSkill(selectionState.slotIndex, previewItem as Skill);
+                                    if (isPetSelection(selectionState)) onEquipPet(previewItem as PetCard);
                                 }}
                                 className="w-full bg-amber-600 text-white font-bold py-2 px-4 rounded-md hover:bg-amber-500 transition-colors"
                             >
-                                {isEquipmentSelection(selectionState) ? '装备' : '学习'}
+                                {isEquipmentSelection(selectionState) || isPetSelection(selectionState) ? '装备' : '学习'}
                             </button>
                         )}
                     </div>

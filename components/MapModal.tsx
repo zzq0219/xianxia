@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Location } from '../locations';
-import WorldMap from './WorldMap';
+import WorldMapSVG from './WorldMapSVG';
 
 interface MapModalProps {
     currentLocationName: string;
@@ -17,8 +17,8 @@ const MapModal: React.FC<MapModalProps> = ({ currentLocationName, onClose, onTra
 
     return (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
-            <div 
-                className="ornate-border bg-stone-900 w-full max-w-6xl h-[90vh] rounded-xl shadow-2xl overflow-hidden backdrop-blur-lg flex flex-col" 
+            <div
+                className="ornate-border bg-stone-900 w-full max-w-6xl h-[90vh] rounded-xl shadow-2xl overflow-hidden backdrop-blur-lg flex flex-col"
                 onClick={e => e.stopPropagation()}
             >
                 <div className="flex justify-between items-center p-4 flex-shrink-0 bg-black/20">
@@ -30,7 +30,7 @@ const MapModal: React.FC<MapModalProps> = ({ currentLocationName, onClose, onTra
                 <div className="flex-grow flex p-4 gap-4 overflow-hidden">
                     {/* New SVG Map Area */}
                     <div className="flex-grow h-full">
-                        <WorldMap 
+                        <WorldMapSVG
                             onLocationSelect={handleLocationSelect}
                             currentLocationName={currentLocationName}
                         />

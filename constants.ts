@@ -1,12 +1,15 @@
-export const CURRENT_GAME_VERSION = 1;
+export const CURRENT_GAME_VERSION = 2;
 
-import { GameState, CharacterCard, Skill, Equipment, Rarity, CharacterRelationship, Leaderboards, ArenaRank, ShopType } from './types';
+import { createDefaultGauntletSystem } from './services/gauntlet/gauntletUtils';
+import { defaultVectorConfig } from './services/vectorService';
+import { ArenaRank, CharacterCard, Equipment, GameState, Leaderboards, PetCard, Rarity, ShopType, Skill } from './types';
+import { DEFAULT_ETIQUETTE_SYSTEM } from './types/etiquette';
 
 // 示例技能
-const skill1: Skill = { id: 's1', name: '青玉剑诀', rarity: '良品', description: '一道蕴含灵气的迅捷剑斩。', eroticDescription: '使用者将灵气灌注于剑身，剑刃变得滚烫，以一个下流的角度刺向敌人的私处。', mechanicsDescription: '造成115%攻击力的物理伤害。', cost: 15, genderLock: 'Male' };
-const skill2: Skill = { id: 's2', name: '岩山盾', rarity: '优品', description: '凝聚大地精华，提升自身防御。', eroticDescription: '使用者双腿大开，从地面召唤出一面石盾护在身前，石盾上布满了模拟男性生殖器的凸起。', mechanicsDescription: '提升自身30%防御力，持续3回合。', cost: 20, genderLock: 'Male' };
-const skill3: Skill = { id: 's3', name: '凤火术', rarity: '良品', description: '释放一股神圣的烈焰洪流。', eroticDescription: '使用者扭动腰肢，从双腿之间喷射出一股灼热的粉红色火焰，烧灼敌人的同时散发出催情的香气。', mechanicsDescription: '造成105%攻击力的火焰伤害，并施加[灼烧]效果（每回合损失5%最大生命值），持续2回合。', cost: 18, genderLock: 'Female' };
-const skill4: Skill = { id: 's4', name: '九尾幻术', rarity: '优品', description: '能动摇心神的魅惑幻术。', eroticDescription: '使用者九条毛茸茸的狐尾从身后伸出，轻柔地缠绕住敌人，用尾巴尖端搔刮其最敏感的部位，使其陷入淫乱的幻觉。', mechanicsDescription: '有60%几率使敌人[混乱]（无法行动），持续1回合。', cost: 25, genderLock: 'Female' };
+const skill1: Skill = { id: 's1', name: '青玉剑诀', rarity: '良品', description: '青蛇宗入门剑法，讲究快、准、狠，直指敌人要害。', eroticDescription: '使用者将灵气灌注于剑身，剑刃变得滚烫并发出微光。他不会攻击致命部位，而是以一个下流至极的角度，用滚烫的剑身精准地划开敌人的衣带，或直接烙在对方的敏感肌肤上，留下屈辱的印记。', mechanicsDescription: '造成115%攻击力的物理伤害。', cost: 15, genderLock: 'Male' };
+const skill2: Skill = { id: 's2', name: '岩山盾', rarity: '优品', description: '凝聚大地精华，化为坚不可摧的护盾。', eroticDescription: '使用者双腿大开，阳刚的灵力贯入大地。一面粗糙的石盾拔地而起，护在身前。石盾表面并非光滑，而是布满了大小不一、形似男性阳具的狰狞凸起，任何攻击都会被这些“石根”顶回去，充满了挑衅与羞辱的意味。', mechanicsDescription: '提升自身30%防御力，持续3回合。', cost: 20, genderLock: 'Male' };
+const skill3: Skill = { id: 's3', name: '凤火术', rarity: '良品', description: '操控如凤凰般华丽的火焰，焚烧敌人。', eroticDescription: '使用者媚眼如丝，扭动腰肢，双腿之间竟喷射出一股灼热的粉红色火焰。这火焰不仅烧灼敌人的肉体，更散发出浓郁的催情香气，让敌人在痛苦与欲望的双重折磨中意志崩溃。', mechanicsDescription: '造成105%攻击力的火焰伤害，并施加[灼烧]效果（每回合损失5%最大生命值），持续2回合。', cost: 18, genderLock: 'Female' };
+const skill4: Skill = { id: 's4', name: '九尾幻术', rarity: '优品', description: '九尾狐一族的血脉天赋，能制造足以乱真的淫靡幻境。', eroticDescription: '使用者身后九条毛茸茸的狐尾如灵蛇般伸出，不由分说地将敌人紧紧缠绕。狐尾的尖端精准地找到并搔刮着对方最敏感的部位，同时释放出强烈的幻术灵力，使其瞬间堕入被无数触手和巨根轮番侵犯的淫乱幻觉之中，彻底丧失战意。', mechanicsDescription: '有60%几率使敌人[混乱]（无法行动），持续1回合。', cost: 25, genderLock: 'Female' };
 const universalSkill1: Skill = { id: 'us1', name: '灵气回复', rarity: '凡品', description: '恢复少量真元。', eroticDescription: '使用者开始娇喘，通过模拟性高潮的方式快速聚集周围的灵气，补充自身。', mechanicsDescription: '恢复25点真元。', cost: 0, genderLock: 'Universal' };
 const universalSkill2: Skill = { id: 'us2', name: '基础拳法', rarity: '凡品', description: '造成少量物理伤害。', eroticDescription: '看似普通的拳法，但每一拳都精准地打向敌人的下体，试图造成最直接的痛苦和羞辱。', mechanicsDescription: '造成100%攻击力的物理伤害。', cost: 10, genderLock: 'Universal' };
 const heavenlyStrike: Skill = { id: 'us3', name: '天雷击', rarity: '珍品', description: '引动九天神雷，对敌人造成巨大伤害。', eroticDescription: '使用者高举双手，召唤一道粗大的紫色闪电，闪电如一条巨龙般从天而降，精准地贯穿敌人的身体，使其浑身抽搐，口吐白沫。', mechanicsDescription: '造成220%攻击力的雷电伤害，但自身[虚弱]（攻击力降低20%），持续2回合。', cost: 45, genderLock: 'Male' };
@@ -73,20 +76,26 @@ export const POSITIONS: Record<string, { name: string; shop: ShopType; requiredA
 // 示例角色卡牌
 export const maleChar: CharacterCard = {
     id: 'c1',
-    name: '风逸',
+    name: '夜宸',
     gender: 'Male',
     realm: '筑基期',
     rarity: '珍品',
-    title: '行走的巨根播种机',
-    race: '人族',
-    origin: '来自凡人村庄的孤儿，被青蛇宗长老偶然发现，因其根骨奇佳而被带回宗门。',
-    appearance: '他从不穿内裤，宽松的道袍下，那根远超常人的巨大肉棒随着他的步伐一晃一荡，轮廓清晰可见。修炼时阳气外泄，常常导致肉棒不自觉地半勃起，将道袍顶出一个夸张的帐篷。他看女人的眼神，就像野兽盯着猎物，充满了不加掩饰的淫欲。',
-    charm: 75,
-    skillfulness: 60,
-    perception: 50,
-    baseAttributes: { hp: 120, maxHp: 120, mp: 50, maxMp: 50, attack: 18, defense: 12, speed: 15, critRate: 0.1, critDmg: 1.5 },
-    skills: [skill1, skill2, null, null],
-    equipment: { weapon: basicSword, armor: basicRobes, accessory1: speedAmulet, accessory2: null }
+    title: '暗影中的低语者',
+    race: '魔族',
+    origin: '来自魔界与人界交汇的阴影之地，是梦魇与人类的混血。他加入宗门的目的无人知晓，只为寻找能满足他特殊“食欲”的灵魂。',
+    appearance: '他总是穿着一件能遮蔽身形的黑色斗篷，兜帽下只能看到一双闪烁着紫色幽光的眼睛和苍白的嘴唇。当他施法时，斗篷下会伸出数条由纯粹暗影构成的触手，这些触手表面光滑湿润，顶端带有能吸食他人精神能量的吸盘。',
+    charm: 88,
+    skillfulness: 70,
+    perception: 80,
+    baseAttributes: { hp: 110, maxHp: 110, mp: 60, maxMp: 60, attack: 20, defense: 10, speed: 16, critRate: 0.12, critDmg: 1.6 },
+    skills: [
+        { id: 's5', name: '暗影触手', rarity: '良品', description: '从阴影中召唤触手束缚敌人。', eroticDescription: '数条冰冷滑腻的暗影触手从地面钻出，无视所有护甲，直接缠绕上敌人的四肢和腰腹，并强行钻入其衣物内，在其最敏感的部位游走、抚弄，使其因强烈的快感和恐惧而无法动弹。', mechanicsDescription: '对单个敌人造成80%攻击力的暗影伤害，并有70%几率使其【束缚】（无法行动），持续1回合。', cost: 20, genderLock: 'Male' },
+        { id: 's6', name: '精神侵蚀', rarity: '优品', description: '用魔音侵蚀敌人的心智。', eroticDescription: '夜宸发出只有目标能听到的、充满魅惑的魔音低语。这声音会直接在敌人脑海中响起，不断放大其内心最深处的淫欲，让其产生被无数人轮番侵犯的幻觉，最终精神崩溃，任人宰割。', mechanicsDescription: '对单个敌人造成精神冲击，使其【混乱】（无法行动）并【易伤】（受到的伤害增加20%），持续2回合。', cost: 35, genderLock: 'Male' },
+        null,
+        null
+    ],
+    equipment: { weapon: null, armor: null, accessory1: null, accessory2: null },
+    pet: null
 };
 
 export const femaleChar: CharacterCard = {
@@ -104,7 +113,8 @@ export const femaleChar: CharacterCard = {
     perception: 60,
     baseAttributes: { hp: 100, maxHp: 100, mp: 70, maxMp: 70, attack: 15, defense: 10, speed: 18, critRate: 0.15, critDmg: 1.6 },
     skills: [skill3, skill4, null, null],
-    equipment: { weapon: null, armor: null, accessory1: null, accessory2: null }
+    equipment: { weapon: null, armor: null, accessory1: null, accessory2: null },
+    pet: null
 };
 
 const maleChar2: CharacterCard = {
@@ -121,7 +131,8 @@ const maleChar2: CharacterCard = {
     perception: 45,
     baseAttributes: { hp: 180, maxHp: 180, mp: 40, maxMp: 40, attack: 14, defense: 25, speed: 10, critRate: 0.05, critDmg: 1.5 },
     skills: [skill2, skill1, null, null],
-    equipment: { weapon: null, armor: null, accessory1: null, accessory2: null }
+    equipment: { weapon: null, armor: null, accessory1: null, accessory2: null },
+    pet: null
 };
 
 const femaleChar2: CharacterCard = {
@@ -138,7 +149,8 @@ const femaleChar2: CharacterCard = {
     perception: 65,
     baseAttributes: { hp: 95, maxHp: 95, mp: 80, maxMp: 80, attack: 12, defense: 14, speed: 16, critRate: 0.08, critDmg: 1.5 },
     skills: [skill4, skill3, null, null],
-    equipment: { weapon: null, armor: null, accessory1: null, accessory2: null }
+    equipment: { weapon: null, armor: null, accessory1: null, accessory2: null },
+    pet: null
 };
 
 const maleChar3: CharacterCard = {
@@ -155,7 +167,8 @@ const maleChar3: CharacterCard = {
     perception: 90,
     baseAttributes: { hp: 250, maxHp: 250, mp: 120, maxMp: 120, attack: 40, defense: 25, speed: 22, critRate: 0.2, critDmg: 2.0 },
     skills: [skill1, skill3, null, null], // Placeholder
-    equipment: { weapon: null, armor: null, accessory1: null, accessory2: null }
+    equipment: { weapon: null, armor: null, accessory1: null, accessory2: null },
+    pet: null
 };
 
 const commonChar: CharacterCard = {
@@ -172,7 +185,8 @@ const commonChar: CharacterCard = {
     perception: 35,
     baseAttributes: { hp: 80, maxHp: 80, mp: 40, maxMp: 40, attack: 10, defense: 8, speed: 12, critRate: 0.05, critDmg: 1.5 },
     skills: [skill1, universalSkill2, null, null],
-    equipment: { weapon: null, armor: null, accessory1: null, accessory2: null }
+    equipment: { weapon: null, armor: null, accessory1: null, accessory2: null },
+    pet: null
 };
 
 const divineEmpress: CharacterCard = {
@@ -189,7 +203,8 @@ const divineEmpress: CharacterCard = {
     perception: 99,
     baseAttributes: { hp: 400, maxHp: 400, mp: 250, maxMp: 250, attack: 60, defense: 40, speed: 30, critRate: 0.3, critDmg: 2.5 },
     skills: [heavenlyStrike, phoenixRebirth, null, null], // using existing high-tier skills as placeholders
-    equipment: { weapon: null, armor: null, accessory1: null, accessory2: null }
+    equipment: { weapon: null, armor: null, accessory1: null, accessory2: null },
+    pet: null
 };
 
 export const CHARACTER_POOL: CharacterCard[] = [maleChar, femaleChar, maleChar2, femaleChar2, maleChar3, commonChar, divineEmpress];
@@ -197,6 +212,62 @@ export const LIMITED_POOL_FEATURED_CHARS: string[] = ['c7', 'c5']; // 九天玄�
 export const LIMITED_POOL_FEATURED_EQUIPMENT: string[] = ['e6', 'e7']; // 诛仙剑 and 昊天宝甲
 export const LIMITED_POOL_FEATURED_SKILLS: string[] = ['us4', 'us5']; // 凤凰涅槃 and 万剑归宗
 
+// 示例兽宠
+export const examplePet: PetCard = {
+    id: 'pet1',
+    name: '寻宝狐',
+    gender: 'Female',
+    rarity: '珍品',
+    description: '一只对宝物有敏锐嗅觉的灵狐，据说能带领主人找到稀世珍宝。',
+    skill: {
+        id: 'ps1',
+        name: '灵狐探宝',
+        rarity: '珍品',
+        description: '寻宝狐发出一声娇媚的叫声，为你指出宝物的方向。',
+        eroticDescription: '寻宝狐跳到主人怀里，用毛茸茸的尾巴轻扫主人的脸颊，同时发出一阵阵勾魂的媚叫，让人心神荡漾。',
+        mechanicsDescription: '在探索中，有20%的几率额外发现一件物品或少量灵石。',
+        cost: 0,
+        genderLock: 'Universal'
+    }
+};
+
+export const malePet: PetCard = {
+    id: 'pet2',
+    name: '霸天虎',
+    gender: 'Male',
+    rarity: '珍品',
+    description: '拥有上古白虎血脉的灵兽，性格霸道，破坏力惊人。',
+    skill: {
+        id: 'ps2',
+        name: '虎啸山林',
+        rarity: '珍品',
+        description: '发出一声震慑心魄的虎啸。',
+        eroticDescription: '雄浑的虎啸声中夹杂着低沉的喘息，能唤起周围生物最原始的交配欲望，使其臣服于霸天虎的雄威之下。',
+        mechanicsDescription: '战斗开始时，有30%几率使敌方全体【恐惧】（攻击力降低15%），持续2回合。',
+        cost: 0,
+        genderLock: 'Universal'
+    }
+};
+
+export const femalePet: PetCard = {
+    id: 'pet3',
+    name: '幻梦蝶',
+    gender: 'Female',
+    rarity: '珍品',
+    description: '翅膀上带有迷幻花纹的灵蝶，能编织出以假乱真的幻境。',
+    skill: {
+        id: 'ps3',
+        name: '蝶恋花',
+        rarity: '珍品',
+        description: '散播能引人入梦的花粉。',
+        eroticDescription: '煽动翅膀，洒下闪着春光的催情花粉，闻到花粉的生物会立刻陷入最淫靡的春梦之中，任人摆布。',
+        mechanicsDescription: '探索时，有15%的几率使你避开一次负面事件。',
+        cost: 0,
+        genderLock: 'Universal'
+    }
+};
+
+export const PET_POOL: PetCard[] = [examplePet, malePet, femalePet];
 
 export const CARD_SELL_PRICES: Record<Rarity, number> = {
     '凡品': 10,
@@ -270,6 +341,49 @@ const initialLeaderboards: Leaderboards = {
     '世界榜': generateLeaderboard(CHARACTER_POOL, 20),
 };
 
+// 示例囚犯 - 使用角色卡牌作为基础
+const bloodDemonCharacter: CharacterCard = {
+    id: 'prisoner-char-01',
+    name: '血影魔君',
+    gender: 'Male',
+    realm: '元婴期',
+    rarity: '绝品',
+    title: '血煞魔头',
+    race: '魔族',
+    origin: '血煞门叛徒，因屠杀无辜村民被捕',
+    appearance: '一身黑衣，双目血红，周身缠绕着淡淡的血煞之气',
+    charm: 45,
+    skillfulness: 75,
+    perception: 60,
+    baseAttributes: { hp: 280, maxHp: 280, mp: 120, maxMp: 120, attack: 45, defense: 28, speed: 22, critRate: 0.18, critDmg: 1.8 },
+    skills: [skill1, skill2, null, null],
+    equipment: { weapon: null, armor: null, accessory1: null, accessory2: null },
+    pet: null
+};
+
+export const examplePrisoner = {
+    character: bloodDemonCharacter,
+    crime: '屠杀无辜村民，吸取血气修炼魔功',
+    sentence: 100,
+    remainingDays: 100,
+    submissionLevel: 20,
+    loyaltyLevel: 5,
+    health: 85,
+    sanity: 90,
+    location: '居住区' as const,
+    cellType: '单独囚室' as const,
+    value: {
+        ransom: 50000,
+        labor: 3000,
+        intelligence: 8000
+    },
+    status: ['健康' as const],
+    history: [],
+    knownInformation: [],
+    potentialInformation: ['血煞门总坛位置', '魔功修炼秘法', '其他魔道同伙'],
+    imprisonedDate: '第一天',
+    realImprisonedTime: Date.now()
+};
 
 // 初始游戏状态
 export const initialGameState: GameState = {
@@ -318,6 +432,7 @@ export const initialGameState: GameState = {
     femaleParty: [],
     cardCollection: [maleChar, femaleChar],
     equipmentInventory: [basicSword, basicRobes, speedAmulet],
+    petCollection: [malePet, femalePet],
     universalSkills: [universalSkill1, universalSkill2],
     arenaRank: initialPlayerArenaRank,
     reputation: {
@@ -329,6 +444,7 @@ export const initialGameState: GameState = {
         goodDeeds: [],
         badDeeds: [],
         lewdDeeds: [],
+        history: [],
     },
     quests: [
         {
@@ -357,9 +473,117 @@ export const initialGameState: GameState = {
   },
   hospitalPatients: [],
   bountyBoard: [],
+  cultivationPavilion: [
+    { slotId: 1, parentA: null, parentB: null, startTime: 0, endTime: 0, status: 'Empty', monitoringLog: [] },
+    { slotId: 2, parentA: null, parentB: null, startTime: 0, endTime: 0, status: 'Empty', monitoringLog: [] },
+    { slotId: 3, parentA: null, parentB: null, startTime: 0, endTime: 0, status: 'Empty', monitoringLog: [] },
+  ],
+  prisonSystem: {
+    prisoners: [examplePrisoner],
+    guards: [],
+    facilities: [],
+    
+    // 新劳役系统
+    laborSites: [
+      {
+        id: 'mine-01',
+        type: '矿山',
+        name: '青蛇矿脉',
+        description: '宗门后山的灵石矿脉',
+        maxWorkers: 2,
+        workers: []
+      },
+      {
+        id: 'herb-01',
+        type: '采药',
+        name: '灵药园',
+        description: '宗门的药材种植园',
+        maxWorkers: 2,
+        workers: []
+      }
+    ],
+    materialInventory: [],
+    
+    // 保留旧系统
+    laborTasks: [],
+    laborRecords: [],
+    
+    events: [],
+    ransomOffers: [],
+    stats: {
+      totalPrisoners: 0,
+      byArea: {
+        '居住区': 0,
+        '审讯区': 0,
+        '娱乐区': 0,
+        '劳役区': 0,
+        '管理区': 0,
+        '医疗区': 0
+      },
+      byCellType: {
+        '普通牢房': 0,
+        '重犯牢房': 0,
+        '单独囚室': 0
+      },
+      avgSubmission: 0,
+      avgLoyalty: 0,
+      avgHealth: 0,
+      totalGuards: 5,
+      escapeAttempts: 0,
+      successfulEscapes: 0,
+      totalRevenue: 0,
+      totalExpenses: 0,
+      netProfit: 0
+    },
+    config: {
+      maxPrisoners: 50,
+      dailyFoodCost: 10,
+      securityLevel: 5,
+      enableAutoInterrogation: false,
+      enableAutoLabor: false
+    }
+  },
+  memories: {
+    探索: [],
+    战斗: [],
+    商城: [],
+    医馆: [],
+    悬赏: [],
+    培育: [],
+    商业: [],
+    声望: [],
+    公告: [],
+    大牢: [],
+    其他: [],
+  },
+  memorySummaries: {
+    探索: { small: [], large: [] },
+    战斗: { small: [], large: [] },
+    商城: { small: [], large: [] },
+    医馆: { small: [], large: [] },
+    悬赏: { small: [], large: [] },
+    培育: { small: [], large: [] },
+    商业: { small: [], large: [] },
+    声望: { small: [], large: [] },
+    公告: { small: [], large: [] },
+    大牢: { small: [], large: [] },
+    其他: { small: [], large: [] },
+  },
+  summarySettings: {
+    autoSummaryEnabled: true,
+    smallSummaryInterval: 10, // 每10条实时记录生成一次小总结
+    largeSummaryInterval: 5,  // 每5条小总结生成一次大总结
+    summaryPrompts: {
+      small: `你是一个记忆总结助手。请根据以下【{category}】分类的记忆片段，生成一个简洁、连贯、大约100-200字的小总结。总结应提炼关键事件、人物和结果，并以第三人称叙述。请直接输出总结内容，不要包含任何额外的前缀或标题。`,
+      large: `你是一个高级记忆分析师。请根据以下多个关于【{category}】的小总结，生成一个全面、深刻、大约200-400字的大总结。这个总结应该识别核心主题、长期影响和人物关系变化，并以宏观视角进行叙述。请直接输出总结内容，不要包含任何额外的前缀或标题。`,
+    },
+  },
+  vectorConfig: defaultVectorConfig,
+  etiquetteSystem: DEFAULT_ETIQUETTE_SYSTEM,
+  gauntletSystem: createDefaultGauntletSystem(),
 };
 
-import { MedicalRecord, BountyTarget } from './types';
+import { BountyTarget, MedicalRecord } from './types';
 
 export const examplePatient: MedicalRecord = {
     patientId: 'patient-example-01',
@@ -394,8 +618,14 @@ export const exampleBountyTarget: Omit<BountyTarget, 'id' | 'status'> = {
             null,
             null
         ],
-        equipment: { weapon: null, armor: null, accessory1: null, accessory2: null }
+        equipment: { weapon: null, armor: null, accessory1: null, accessory2: null },
+        pet: null
     },
     specialTrait: '只对处女或元阴未泄的女性修士感兴趣，在与她们战斗时会变得异常强大。',
-    locationHint: '似乎在【合欢宗】附近的山脉中寻找新的猎物。'
+    locationHint: '似乎在【合欢宗】附近的山脉中寻找新的猎物。',
+    trackerId: null,
+    startTime: 0,
+    endTime: 0,
+    trackingLog: null,
+    finalOutcome: null,
 };

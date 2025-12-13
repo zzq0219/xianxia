@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iframe Content</title>
+  <style>
+    /* CSS 变量定义，为了让 color: var(--text-dark) 生效 */
+    :root {
+      --text-dark: #333333;
+    }
+
+    /* --- 你提供的 CSS 代码 --- */
+
+    /* 针对 iframe srcdoc 环境的特殊处理 */
+    html {
+      margin: 0;
+      padding: 0;
+      /* 在iframe srcdoc中不使用固定高度,让内容自然撑开 */
+      min-height: 100%;
+      width: 100%;
+      /* 防止 iOS Safari 字体大小调整 */
+      -webkit-text-size-adjust: 100%;
+      /* 改善文本渲染 */
+      text-rendering: optimizeLegibility;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      /* 在iframe srcdoc中不使用固定高度,让内容自然撑开 */
+      min-height: 100%;
+      width: 100%;
+      background: #f5f9fc;
+      color: var(--text-dark);
+      /* 防止水平滚动 */
+      overflow-x: hidden;
+      
+      /* 添加一些内边距，让内容不至于贴边 */
+      box-sizing: border-box;
+      padding: 20px;
+    }
+
+    /* --- 用于演示的额外样式 --- */
+    h1 {
+      color: #0056b3;
+    }
+    .wide-element {
+      width: 120%; /* 故意设置比 body 更宽 */
+      background-color: #ffcccc;
+      padding: 10px;
+      border: 1px solid #ff8080;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Iframe 内部内容</h1>
+  <p>这段内容是直接在 <code>iframe</code> 内部渲染的。</p>
+  <p>由于 <code>html</code> 和 <code>body</code> 都设置了 <code>min-height: 100%</code>，所以当内容增加时，整个文档的高度会自动撑开，而不是在 `iframe` 内部出现滚动条（除非父页面的 `iframe` 元素有固定的高度）。</p>
+  
+  <div class="wide-element">
+    这个元素设置了 <code>width: 120%</code>，它比容器更宽。
+    <br>
+    但是，因为 <code>body</code> 设置了 <code>overflow-x: hidden</code>，所以你看不到水平滚动条，超出的部分被隐藏了。
+  </div>
+
+  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.</p>
+
+</body>
+</html>
