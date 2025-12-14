@@ -33,26 +33,24 @@ const isPetCard = (item: any): item is PetCard => !!(item && item.skill && !item
 const isCompensationItem = (item: any): item is { type: 'compensation', id: string, name: string, rarity: Rarity, description: string } => item.type === 'compensation';
 
 
-// 仙侠风格主标签按钮
 const TabButton: React.FC<{ label: string; isActive: boolean; onClick: () => void }> = ({ label, isActive, onClick }) => (
     <button
         onClick={onClick}
         className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition-all duration-300 ${isActive
-            ? 'bg-ink-800/90 text-gold-400 border-b-2 border-gold-500/60 shadow-[0_0_10px_rgba(180,149,106,0.15)]'
-            : 'bg-transparent text-ink-400 hover:bg-ink-800/50 hover:text-gold-300'
+            ? 'bg-gradient-to-b from-stone-700/90 to-stone-800/90 text-gradient-gold border-b-2 border-xianxia-gold-500 shadow-glow-gold'
+            : 'bg-transparent text-gray-400 hover:bg-stone-700/50 hover:text-amber-300'
             }`}
     >
         {label}
     </button>
 );
 
-// 仙侠风格子标签按钮
 const SubTabButton: React.FC<{ label: string; isActive: boolean; onClick: () => void }> = ({ label, isActive, onClick }) => (
     <button
         onClick={onClick}
-        className={`px-4 py-2 rounded-lg transition-all duration-300 text-sm font-medium ${isActive
-            ? 'bg-gold-600/20 text-gold-300 border border-gold-500/40 shadow-[0_0_8px_rgba(180,149,106,0.2)]'
-            : 'bg-ink-800/60 text-ink-300 hover:bg-ink-700/70 hover:text-gold-300 border border-ink-700/50'
+        className={`px-4 py-2 rounded-md transition-all duration-300 text-sm font-medium ${isActive
+            ? 'bg-gradient-to-r from-amber-600/30 to-amber-700/30 text-gradient-gold border border-xianxia-gold-600/50 shadow-glow-gold'
+            : 'bg-stone-800/60 text-gray-300 hover:bg-stone-700/80 hover:text-amber-300 border border-transparent'
             }`}
     >
         {label}
@@ -133,66 +131,37 @@ const GachaPoolUI: React.FC<{
         };
 
         return (
-            <div className="ink-card rounded-lg overflow-hidden flex flex-col relative xianxia-frame">
-                {/* 卡池横幅 */}
+            <div className="ornate-border border-xianxia-gold-600 bg-gradient-to-br from-stone-800/70 via-stone-900/80 to-black/70 rounded-lg overflow-hidden flex flex-col shadow-glow-gold">
                 <div className="relative h-48">
                     <img src={bannerUrl} alt={title} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-ink-950/95 via-ink-900/50 to-transparent"></div>
-                    {/* 标题装饰 */}
-                    <div className="absolute bottom-4 left-4 right-4">
-                        <h3 className="text-2xl font-bold text-gold-400 font-brush tracking-[0.1em] drop-shadow-lg flex items-center gap-2">
-                            <span className="text-gold-500/50">〓</span>
-                            {title}
-                            <span className="text-gold-500/50">〓</span>
-                        </h3>
-                    </div>
-                    {/* 角落祥云 */}
-                    <div className="absolute top-2 right-2 text-gold-500/30 text-lg">☁</div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-stone-900/95 via-stone-800/50 to-transparent"></div>
+                    <h3 className="absolute bottom-4 left-4 text-2xl font-bold text-gradient-gold font-serif tracking-wider drop-shadow-lg text-shadow-glow">{title}</h3>
                 </div>
-
                 <div className="p-4 flex-grow flex flex-col">
-                    <p className="text-sm text-ink-200 flex-grow leading-relaxed font-elegant">{description}</p>
-
-                    {/* 概率公示 */}
+                    <p className="text-sm text-gray-200 flex-grow leading-relaxed">{description}</p>
                     <div className="text-right mt-2 mb-2">
-                        <button onClick={() => setShowRates(!showRates)} className="text-xs text-ink-400 hover:text-gold-400 transition-colors duration-300 flex items-center gap-1 ml-auto">
-                            <span className="text-gold-500/50">◇</span>
+                        <button onClick={() => setShowRates(!showRates)} className="text-xs text-stone-400 hover:text-amber-400 transition-colors duration-300">
                             概率公示 {showRates ? '▲' : '▼'}
                         </button>
                     </div>
                     {showRates && (
-                        <div className="ink-card p-3 rounded-lg mb-3 text-xs animate-fade-in border border-gold-600/20">
+                        <div className="glass-morphism p-3 rounded-md mb-3 text-xs animate-slide-in border border-xianxia-gold-700/30">
                             {getRateDisplay()}
-                            <p className="text-ink-500 mt-1 text-[10px]">※ 十次招募必得【优品】或以上品质的物品。</p>
+                            <p className="text-stone-500 mt-1 text-[10px]">※ 十次招募必得【优品】或以上品质的物品。</p>
                             {poolType === 'limited' && (
-                                <p className="text-gold-400 mt-1 text-[10px]">※ 限定卡池高稀有度概率大幅提升！</p>
+                                <p className="text-amber-400 mt-1 text-[10px]">※ 限定卡池高稀有度概率大幅提升！</p>
                             )}
                         </div>
                     )}
-
-                    {error && <div className="text-cinnabar-400 text-center text-sm my-2 animate-shake">{error}</div>}
-
-                    {/* 抽卡按钮 */}
+                    {error && <div className="text-red-400 text-center text-sm my-2 animate-shake">{error}</div>}
                     <div className="mt-auto flex gap-3">
-                        <button
-                            onClick={onPullOne}
-                            disabled={isLoading}
-                            className="flex-1 qi-flow-btn rounded-lg p-3 text-center disabled:opacity-50 disabled:cursor-wait"
-                        >
-                            <p className="font-bold text-gold-300 font-elegant">{isLoading ? '...' : pullOneLabel}</p>
-                            <p className="text-xs text-gold-500 flex items-center justify-center gap-1">
-                                <span>◈</span>消耗 {pullOneCost} 灵石
-                            </p>
+                        <button onClick={onPullOne} disabled={isLoading} className="flex-1 bg-gradient-to-br from-stone-700 to-stone-800 hover:from-stone-600 hover:to-stone-700 transition-all duration-300 rounded-md p-3 text-center border border-stone-500/50 shadow-lg disabled:opacity-50 disabled:cursor-wait hover:shadow-glow-blue">
+                            <p className="font-bold text-white">{isLoading ? '...' : pullOneLabel}</p>
+                            <p className="text-xs text-amber-400">消耗 {pullOneCost} 灵石</p>
                         </button>
-                        <button
-                            onClick={onPullTen}
-                            disabled={isLoading}
-                            className="flex-1 bg-gradient-to-br from-gold-600/40 via-gold-700/50 to-gold-800/40 hover:from-gold-500/50 hover:via-gold-600/60 hover:to-gold-700/50 transition-all duration-300 rounded-lg p-3 text-center border border-gold-500/50 shadow-[0_0_15px_rgba(180,149,106,0.2)] disabled:opacity-50 disabled:cursor-wait immortal-mist"
-                        >
-                            <p className="font-bold text-gold-200 font-brush tracking-wider">{isLoading ? '天机运转中...' : pullTenLabel}</p>
-                            <p className="text-xs text-gold-300 flex items-center justify-center gap-1">
-                                <span>◈</span>消耗 {pullTenCost} 灵石
-                            </p>
+                        <button onClick={onPullTen} disabled={isLoading} className="flex-1 bg-gradient-to-br from-amber-600 via-amber-700 to-amber-800 hover:from-amber-500 hover:via-amber-600 hover:to-amber-700 transition-all duration-300 rounded-md p-3 text-center border border-xianxia-gold-500 shadow-glow-gold disabled:opacity-50 disabled:cursor-wait animate-shimmer">
+                            <p className="font-bold text-white text-shadow-glow">{isLoading ? '天机演算中...' : pullTenLabel}</p>
+                            <p className="text-xs text-amber-100">消耗 {pullTenCost} 灵石</p>
                         </button>
                     </div>
                 </div>
@@ -526,41 +495,29 @@ const Shop: React.FC<ShopProps> = ({ playerProfile, setPlayerProfile }) => {
     };
 
     return (
-        <div className="h-full flex flex-col font-serif text-ink-300 bg-gradient-to-br from-ink-900/50 via-ink-950/70 to-ink-900/50">
-            {/* 标签栏 */}
-            <div className="flex-shrink-0 px-4 flex space-x-2 border-b border-gold-600/20 bg-ink-900/50">
-                <TabButton label="🎲 抽取卡池" isActive={mainTab === '抽取卡池'} onClick={() => setMainTab('抽取卡池')} />
-                <TabButton label="🏪 道具购买" isActive={mainTab === '道具购买'} onClick={() => setMainTab('道具购买')} />
+        <div className="h-full flex flex-col font-serif text-gray-300 bg-gradient-to-br from-stone-900 via-stone-950 to-black">
+            <div className="flex-shrink-0 px-4 flex space-x-2 border-b border-xianxia-gold-700/30">
+                <TabButton label="抽取卡池" isActive={mainTab === '抽取卡池'} onClick={() => setMainTab('抽取卡池')} />
+                <TabButton label="道具购买" isActive={mainTab === '道具购买'} onClick={() => setMainTab('道具购买')} />
             </div>
-            <div className="flex-grow overflow-y-auto bg-ink-950/30 p-4">
+            <div className="flex-grow overflow-y-auto bg-black/20 p-4 scrollbar-xianxia">
                 {mainTab === '抽取卡池' && (
                     <div className="space-y-4">
-                        {/* 卡池类型选择 */}
                         <div className="flex justify-center gap-3">
-                            <SubTabButton label="👤 人物卡牌" isActive={gachaTab === '人物卡牌'} onClick={() => setGachaTab('人物卡牌')} />
-                            <SubTabButton label="⚔️ 装备" isActive={gachaTab === '装备'} onClick={() => setGachaTab('装备')} />
-                            <SubTabButton label="📜 通用技能" isActive={gachaTab === '通用技能'} onClick={() => setGachaTab('通用技能')} />
-                            <SubTabButton label="🐾 兽宠" isActive={gachaTab === '兽宠'} onClick={() => setGachaTab('兽宠')} />
+                            <SubTabButton label="人物卡牌" isActive={gachaTab === '人物卡牌'} onClick={() => setGachaTab('人物卡牌')} />
+                            <SubTabButton label="装备" isActive={gachaTab === '装备'} onClick={() => setGachaTab('装备')} />
+                            <SubTabButton label="通用技能" isActive={gachaTab === '通用技能'} onClick={() => setGachaTab('通用技能')} />
+                            <SubTabButton label="兽宠" isActive={gachaTab === '兽宠'} onClick={() => setGachaTab('兽宠')} />
                         </div>
                         {renderGachaContent()}
                     </div>
                 )}
                 {mainTab === '道具购买' && (
                     <div className="p-6 text-center font-serif flex flex-col items-center justify-center h-full">
-                        <div className="ink-card p-8 rounded-lg xianxia-frame relative">
-                            {/* 装饰 */}
-                            <div className="absolute top-4 left-4 w-5 h-5 border-l-2 border-t-2 border-gold-500/30" />
-                            <div className="absolute top-4 right-4 w-5 h-5 border-r-2 border-t-2 border-gold-500/30" />
-                            <div className="absolute bottom-4 left-4 w-5 h-5 border-l-2 border-b-2 border-gold-500/30" />
-                            <div className="absolute bottom-4 right-4 w-5 h-5 border-r-2 border-b-2 border-gold-500/30" />
-
-                            <div className="text-6xl mb-6">💰</div>
-                            <p className="text-gold-400 text-xl font-bold mb-2 font-brush tracking-wider">
-                                <span className="text-gold-500/50 mr-2">〓</span>
-                                此功能尚未开放
-                                <span className="text-gold-500/50 ml-2">〓</span>
-                            </p>
-                            <p className="text-ink-400 mt-2 font-elegant">未来的商店将在此处展示，可购买丹药、材料等。</p>
+                        <div className="glass-morphism p-8 rounded-lg ornate-border border-xianxia-gold-600">
+                            <div className="text-6xl mb-6 animate-bounce-slow">💰</div>
+                            <p className="text-gradient-gold text-xl font-bold mb-2">此功能尚未开放</p>
+                            <p className="text-gray-400 mt-2">未来的商店将在此处展示，可购买丹药、材料等。</p>
                         </div>
                     </div>
                 )}

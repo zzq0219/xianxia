@@ -10,13 +10,12 @@ interface ResponsiveModalProps {
 }
 
 /**
- * 响应式模态框组件 - 水墨风格
+ * 响应式模态框组件
  * 特点：
  * - 移动端：从底部滑入，占据90%屏幕高度，显示拖动指示器
  * - 桌面端：居中显示，固定最大宽度
  * - 支持点击背景关闭
  * - 自动滚动处理
- * - 水墨风格设计
  */
 export const ResponsiveModal: React.FC<ResponsiveModalProps> = ({
     isOpen,
@@ -51,70 +50,57 @@ export const ResponsiveModal: React.FC<ResponsiveModalProps> = ({
 
     return (
         <div
-            className="fixed inset-0 bg-ink-950/90 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-fade-in"
+            className="fixed inset-0 bg-black/80 z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-fade-in"
             onClick={onClose}
         >
             <div
                 className={`
-                    modal-responsive
-                    ink-card relative
-                    w-full ${sizeClasses[size]}
-                    h-[90vh] md:h-auto md:max-h-[85vh]
-                    rounded-t-xl md:rounded-lg
-                    overflow-hidden
-                    flex flex-col
-                    animate-fade-in
-                `}
+          modal-responsive
+          ornate-border border-xianxia-gold-600 
+          bg-gradient-to-br from-stone-800 via-stone-900 to-stone-950 
+          w-full ${sizeClasses[size]}
+          h-[90vh] md:h-auto md:max-h-[85vh]
+          rounded-t-2xl md:rounded-xl
+          shadow-2xl overflow-hidden backdrop-blur-lg 
+          flex flex-col
+          animate-slide-up-mobile
+        `}
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* 水墨顶部装饰线 */}
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500/50 to-transparent" />
-
-                {/* 角落装饰 */}
-                <div className="absolute top-2 left-2 w-3 h-3 border-l border-t border-gold-500/30" />
-                <div className="absolute top-2 right-2 w-3 h-3 border-r border-t border-gold-500/30" />
-
                 {/* 移动端拖动指示器 */}
                 {showDragIndicator && (
-                    <div className="md:hidden flex-shrink-0 pt-3 pb-1 bg-ink-900/50">
-                        <div className="w-10 h-1 bg-gold-500/40 rounded-full mx-auto"></div>
+                    <div className="md:hidden flex-shrink-0 pt-2 pb-1 bg-black/10">
+                        <div className="modal-drag-indicator"></div>
                     </div>
                 )}
 
                 {/* 标题栏 */}
-                <div className="flex-shrink-0 bg-ink-900/50 border-b border-gold-500/20">
+                <div className="flex-shrink-0 bg-black/20 border-b border-stone-700/50">
                     <div className="flex justify-between items-center p-3 md:p-4">
-                        <h2 className="text-lg md:text-2xl font-bold text-gold-400 font-serif tracking-wider truncate pr-2 ink-title">
+                        <h2 className="text-lg md:text-2xl font-bold text-gradient-gold text-shadow-glow font-serif truncate pr-2">
                             {title}
                         </h2>
                         <button
                             onClick={onClose}
-                            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-ink-800/80 hover:bg-ink-700/80 border border-gold-500/30 hover:border-gold-400/50 text-ink-400 hover:text-gold-400 transition-all duration-300 flex items-center justify-center flex-shrink-0"
+                            className="text-amber-300 hover:text-white transition-colors touch-target flex-shrink-0"
                             aria-label="关闭"
                         >
-                            <i className="fa-solid fa-times text-lg md:text-xl"></i>
+                            <i className="fa-solid fa-times text-xl md:text-2xl"></i>
                         </button>
                     </div>
                 </div>
 
                 {/* 内容区 - 可滚动 */}
-                <div className="flex-grow overflow-y-auto bg-ink-900/30 p-3 md:p-6">
+                <div className="flex-grow overflow-y-auto scroll-mobile scrollbar-xianxia p-3 md:p-6">
                     {children}
                 </div>
-
-                {/* 水墨底部装饰线 */}
-                <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500/50 to-transparent" />
-
-                {/* 底部角落装饰 */}
-                <div className="absolute bottom-2 left-2 w-3 h-3 border-l border-b border-gold-500/30" />
-                <div className="absolute bottom-2 right-2 w-3 h-3 border-r border-b border-gold-500/30" />
             </div>
         </div>
     );
 };
 
 /**
- * 响应式模态框（带底部操作栏）- 水墨风格
+ * 响应式模态框（带底部操作栏）
  */
 export const ResponsiveModalWithFooter: React.FC<ResponsiveModalProps & {
     footer?: React.ReactNode;
@@ -150,70 +136,57 @@ export const ResponsiveModalWithFooter: React.FC<ResponsiveModalProps & {
 
         return (
             <div
-                className="fixed inset-0 bg-ink-950/90 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-fade-in"
+                className="fixed inset-0 bg-black/80 z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-fade-in"
                 onClick={onClose}
             >
                 <div
                     className={`
-                        modal-responsive
-                        ink-card relative
-                        w-full ${sizeClasses[size]}
-                        h-[90vh] md:h-auto md:max-h-[85vh]
-                        rounded-t-xl md:rounded-lg
-                        overflow-hidden
-                        flex flex-col
-                        animate-fade-in
-                    `}
+          modal-responsive
+          ornate-border border-xianxia-gold-600 
+          bg-gradient-to-br from-stone-800 via-stone-900 to-stone-950 
+          w-full ${sizeClasses[size]}
+          h-[90vh] md:h-auto md:max-h-[85vh]
+          rounded-t-2xl md:rounded-xl
+          shadow-2xl overflow-hidden backdrop-blur-lg 
+          flex flex-col
+          animate-slide-up-mobile
+        `}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    {/* 水墨顶部装饰线 */}
-                    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500/50 to-transparent" />
-
-                    {/* 角落装饰 */}
-                    <div className="absolute top-2 left-2 w-3 h-3 border-l border-t border-gold-500/30" />
-                    <div className="absolute top-2 right-2 w-3 h-3 border-r border-t border-gold-500/30" />
-
                     {/* 移动端拖动指示器 */}
                     {showDragIndicator && (
-                        <div className="md:hidden flex-shrink-0 pt-3 pb-1 bg-ink-900/50">
-                            <div className="w-10 h-1 bg-gold-500/40 rounded-full mx-auto"></div>
+                        <div className="md:hidden flex-shrink-0 pt-2 pb-1 bg-black/10">
+                            <div className="modal-drag-indicator"></div>
                         </div>
                     )}
 
                     {/* 标题栏 */}
-                    <div className="flex-shrink-0 bg-ink-900/50 border-b border-gold-500/20">
+                    <div className="flex-shrink-0 bg-black/20 border-b border-stone-700/50">
                         <div className="flex justify-between items-center p-3 md:p-4">
-                            <h2 className="text-lg md:text-2xl font-bold text-gold-400 font-serif tracking-wider truncate pr-2 ink-title">
+                            <h2 className="text-lg md:text-2xl font-bold text-gradient-gold text-shadow-glow font-serif truncate pr-2">
                                 {title}
                             </h2>
                             <button
                                 onClick={onClose}
-                                className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-ink-800/80 hover:bg-ink-700/80 border border-gold-500/30 hover:border-gold-400/50 text-ink-400 hover:text-gold-400 transition-all duration-300 flex items-center justify-center flex-shrink-0"
+                                className="text-amber-300 hover:text-white transition-colors touch-target flex-shrink-0"
                                 aria-label="关闭"
                             >
-                                <i className="fa-solid fa-times text-lg md:text-xl"></i>
+                                <i className="fa-solid fa-times text-xl md:text-2xl"></i>
                             </button>
                         </div>
                     </div>
 
                     {/* 内容区 - 可滚动 */}
-                    <div className="flex-grow overflow-y-auto bg-ink-900/30 p-3 md:p-6">
+                    <div className="flex-grow overflow-y-auto scroll-mobile scrollbar-xianxia p-3 md:p-6">
                         {children}
                     </div>
 
                     {/* 底部操作栏 */}
                     {footer && (
-                        <div className="flex-shrink-0 border-t border-gold-500/20 bg-ink-900/50 p-3 md:p-4">
+                        <div className="flex-shrink-0 border-t border-stone-700/50 bg-black/20 p-3 md:p-4">
                             {footer}
                         </div>
                     )}
-
-                    {/* 水墨底部装饰线 */}
-                    <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500/50 to-transparent" />
-
-                    {/* 底部角落装饰 */}
-                    <div className="absolute bottom-2 left-2 w-3 h-3 border-l border-b border-gold-500/30" />
-                    <div className="absolute bottom-2 right-2 w-3 h-3 border-r border-b border-gold-500/30" />
                 </div>
             </div>
         );

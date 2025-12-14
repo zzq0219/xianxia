@@ -1,362 +1,322 @@
-/**
- * 大闯关系统 - 大厅入口Modal
- * 
- * 这是大闯关系统的主入口组件，显示：
- * - 赛事状态和倒计时
- * - 报名入口
- * - 直播间入口
- * - 公告栏入口
- */
-
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { GameState } from '../../types';
-import { GauntletStatus } from '../../types/gauntlet.types';
+import { ResponsiveModal } from '../ResponsiveModal';
 
 interface GauntletHallModalProps {
     isOpen: boolean;
     onClose: () => void;
     gameState: GameState;
-    onUpdateGameState: (updater: (prev: GameState) => GameState) => void;
+    onOpenAnnouncement: () => void;
+    onOpenRegistration: () => void;
+    onOpenLive: () => void;
 }
 
-const GauntletHallModal: React.FC<GauntletHallModalProps> = ({
+/**
+ * 大闯关大厅界面
+ * 功能：
+ * - 显示赛事状态（未创建/准备中/报名中/进行中/已结束）
+ * - 显示倒计时
+ * - 提供入口：查看公告、报名、观看直播
+ */
+export const GauntletHallModal: React.FC<GauntletHallModalProps> = ({
     isOpen,
     onClose,
     gameState,
-    onUpdateGameState,
+    onOpenAnnouncement,
+    onOpenRegistration,
+    onOpenLive,
 }) => {
-    const [activeTab, setActiveTab] = useState<'overview' | 'registration' | 'live' | 'announcements'>('overview');
-
-    if (!isOpen) return null;
-
-    const gauntletSystem = gameState.gauntletSystem;
+    const { gauntletSystem } = gameState;
     const currentEvent = gauntletSystem.currentEvent;
+    const config = gauntletSystem.config;
 
-    // 获取当前状态（从currentEvent获取，如果没有则显示休赛期）
-    const currentStatus: GauntletStatus | 'idle' = currentEvent?.status || 'idle';
+    // 倒计时状态
+    const [countdown, setCountdown] = useState<string>('');
 
-    // 获取状态显示文本
-    const getStatusText = (status: GauntletStatus | 'idle'): string => {
-        const statusMap: Record<GauntletStatus | 'idle', string> = {
-            'idle': '🌙 休赛期',
-            'countdown': '⏰ 倒计时',
-            'registration': '📝 报名中',
-            'preparing': '⚙️ 准备中',
-            'in_progress': '🔥 进行中',
-            'completed': '🏆 已结束',
+    // 计算倒计时
+    useEffect(() => {
+        if (!currentEvent) return;
+
+        const updateCountdown = () => {
+            const now = Date.now();
+            let targetTime = 0;
+            let prefix = '';
+
+            switch (currentEvent.status) {
+                case 'registration':
+                    targetTime = currentEvent.registrationDeadline;
+                    prefix = '距离报名结束: ';
+                    break;
+                case 'preparing':
+                    targetTime = currentEvent.registrationDeadline;
+                    prefix = '距离赛事开始: ';
+                    break;
+                case 'in_progress':
+                    // 显示当前轮次信息
+                    const currentRound = currentEvent.rounds.find(r => r.status === 'in_progress');
+                    if (currentRound) {
+                        setCountdown(`第${currentRound.roundNumber}轮进行中`);
+                        return;
+                    }
+                    break;
+                case 'completed':
+                    setCountdown('赛事已结束');
+                    return;
+                default:
+                    setCountdown('');
+                    return;
+            }
+
+            if (targetTime > 0) {
+                const diff = targetTime - now;
+                if (diff <= 0) {
+                    setCountdown('即将开始...');
+                } else {
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                    let timeStr = '';
+                    if (days > 0) timeStr += `${days}天 `;
+                    if (hours > 0) timeStr += `${hours}时 `;
+                    if (minutes > 0) timeStr += `${minutes}分 `;
+                    timeStr += `${seconds}秒`;
+
+                    setCountdown(prefix + timeStr);
+                }
+            }
         };
-        return statusMap[status] || '未知状态';
+
+        updateCountdown();
+        const timer = setInterval(updateCountdown, 1000);
+        return () => clearInterval(timer);
+    }, [currentEvent]);
+
+    // 获取状态文本和颜色
+    const getStatusInfo = () => {
+        if (!currentEvent) {
+            return {
+                text: '暂无赛事',
+                color: 'text-gray-400',
+                icon: '🌙',
+                description: '当前没有正在进行的大闯关赛事'
+            };
+        }
+
+        switch (currentEvent.status) {
+            case 'countdown':
+                return {
+                    text: '倒计时中',
+                    color: 'text-blue-400',
+                    icon: '⏱️',
+                    description: '赛事即将开始，敬请期待！'
+                };
+            case 'registration':
+                return {
+                    text: '报名中',
+                    color: 'text-green-400',
+                    icon: '📝',
+                    description: '报名通道已开启，快来参加吧！'
+                };
+            case 'preparing':
+                return {
+                    text: '筹备中',
+                    color: 'text-yellow-400',
+                    icon: '⚙️',
+                    description: '赛事正在紧张筹备中...'
+                };
+            case 'in_progress':
+                return {
+                    text: '进行中',
+                    color: 'text-red-400',
+                    icon: '🔥',
+                    description: '赛事正在激烈进行，快去观战！'
+                };
+            case 'completed':
+                return {
+                    text: '已结束',
+                    color: 'text-purple-400',
+                    icon: '👑',
+                    description: '本届赛事已圆满结束'
+                };
+            default:
+                return {
+                    text: '未知状态',
+                    color: 'text-gray-400',
+                    icon: '❓',
+                    description: ''
+                };
+        }
     };
 
-    // 获取状态颜色
-    const getStatusColor = (status: GauntletStatus | 'idle'): string => {
-        const colorMap: Record<GauntletStatus | 'idle', string> = {
-            'idle': 'text-gray-400',
-            'countdown': 'text-blue-400',
-            'registration': 'text-green-400',
-            'preparing': 'text-purple-400',
-            'in_progress': 'text-red-400',
-            'completed': 'text-amber-400',
-        };
-        return colorMap[status] || 'text-white';
-    };
+    const statusInfo = getStatusInfo();
+
+    // 判断按钮是否可用
+    const canViewAnnouncement = currentEvent !== null;
+    const canRegister = currentEvent?.status === 'registration';
+    const canViewLive = currentEvent?.status === 'in_progress';
 
     return (
-        <div
-            className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-fade-in"
-            onClick={onClose}
+        <ResponsiveModal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="🎪 大闯关大厅"
+            size="lg"
         >
-            <div
-                className="ornate-border border-xianxia-gold-600 bg-gradient-to-br from-stone-800 via-stone-900 to-stone-950 w-full max-w-4xl h-auto max-h-[85vh] rounded-xl shadow-2xl overflow-hidden backdrop-blur-lg flex flex-col"
-                onClick={(e) => e.stopPropagation()}
-            >
-                {/* 头部 */}
-                <div className="flex justify-between items-center p-4 flex-shrink-0 bg-black/20 border-b border-stone-700/50">
-                    <div className="flex items-center gap-3">
-                        <span className="text-3xl">🏟️</span>
-                        <div>
-                            <h2 className="text-2xl font-bold text-gradient-gold text-shadow-glow font-serif">
-                                大闯关
-                            </h2>
-                            <p className="text-sm text-gray-400">修仙界最盛大的综艺赛事</p>
+            <div className="space-y-6">
+                {/* 赛事标题卡片 */}
+                <div className="bg-gradient-to-r from-amber-900/30 via-amber-800/20 to-amber-900/30 rounded-lg p-6 border border-amber-700/30">
+                    <div className="text-center">
+                        <div className="text-5xl mb-3">{statusInfo.icon}</div>
+                        <h3 className="text-2xl md:text-3xl font-bold text-amber-300 mb-2">
+                            {currentEvent?.name || '青蛇宗大闯关'}
+                        </h3>
+                        <div className={`text-lg md:text-xl ${statusInfo.color} font-semibold mb-2`}>
+                            {statusInfo.text}
+                        </div>
+                        <p className="text-gray-400 text-sm md:text-base">{statusInfo.description}</p>
+                    </div>
+                </div>
+
+                {/* 倒计时卡片 */}
+                {countdown && currentEvent && (
+                    <div className="bg-black/30 rounded-lg p-4 border border-stone-700/50">
+                        <div className="text-center">
+                            <div className="text-3xl md:text-4xl font-bold text-gradient-gold mb-2">
+                                {countdown}
+                            </div>
                         </div>
                     </div>
-                    <button onClick={onClose} className="text-amber-300 hover:text-white transition-colors">
-                        <i className="fa-solid fa-times text-2xl"></i>
+                )}
+
+                {/* 赛事信息 */}
+                {currentEvent && (
+                    <div className="bg-black/20 rounded-lg p-4 md:p-6 border border-stone-700/30 space-y-3">
+                        <h4 className="text-lg font-bold text-amber-300 mb-3 flex items-center gap-2">
+                            <i className="fa-solid fa-info-circle"></i>
+                            赛事信息
+                        </h4>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm md:text-base">
+                            <div className="flex justify-between">
+                                <span className="text-gray-400">参赛人数：</span>
+                                <span className="text-white font-semibold">64人</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-400">比赛轮次：</span>
+                                <span className="text-white font-semibold">6轮</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-400">当前轮次：</span>
+                                <span className="text-white font-semibold">
+                                    {currentEvent.currentRound > 0 ? `第${currentEvent.currentRound}轮` : '未开始'}
+                                </span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-400">评委人数：</span>
+                                <span className="text-white font-semibold">{currentEvent.judges.length}位</span>
+                            </div>
+                        </div>
+
+                        {/* 赛制说明 */}
+                        <div className="mt-4 pt-4 border-t border-stone-700/30">
+                            <p className="text-gray-400 text-xs md:text-sm leading-relaxed">
+                                本届大闯关采用64人淘汰赛制，经过6轮激烈角逐，
+                                最终决出冠军。每轮由专业评委现场打分，得分最高者晋级下一轮！
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* 操作按钮 */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* 查看公告 */}
+                    <button
+                        onClick={onOpenAnnouncement}
+                        disabled={!canViewAnnouncement}
+                        className={`
+              py-4 px-6 rounded-lg font-semibold text-base md:text-lg
+              transition-all duration-200 touch-target
+              ${canViewAnnouncement
+                                ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white shadow-lg hover:shadow-blue-500/50'
+                                : 'bg-gray-700/50 text-gray-500 cursor-not-allowed'
+                            }
+            `}
+                    >
+                        <i className="fa-solid fa-bullhorn mr-2"></i>
+                        查看公告
+                    </button>
+
+                    {/* 报名参赛 */}
+                    <button
+                        onClick={onOpenRegistration}
+                        disabled={!canRegister}
+                        className={`
+              py-4 px-6 rounded-lg font-semibold text-base md:text-lg
+              transition-all duration-200 touch-target
+              ${canRegister
+                                ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white shadow-lg hover:shadow-green-500/50 animate-pulse-slow'
+                                : 'bg-gray-700/50 text-gray-500 cursor-not-allowed'
+                            }
+            `}
+                    >
+                        <i className="fa-solid fa-pen-to-square mr-2"></i>
+                        {canRegister ? '立即报名' : '暂未开放'}
+                    </button>
+
+                    {/* 观看直播 */}
+                    <button
+                        onClick={onOpenLive}
+                        disabled={!canViewLive}
+                        className={`
+              py-4 px-6 rounded-lg font-semibold text-base md:text-lg
+              transition-all duration-200 touch-target
+              ${canViewLive
+                                ? 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white shadow-lg hover:shadow-red-500/50'
+                                : 'bg-gray-700/50 text-gray-500 cursor-not-allowed'
+                            }
+            `}
+                    >
+                        <i className="fa-solid fa-tv mr-2"></i>
+                        {canViewLive ? '观看直播' : '暂未开始'}
                     </button>
                 </div>
 
-                {/* 标签页导航 */}
-                <div className="flex-shrink-0 px-4 flex space-x-2 border-b border-stone-700 bg-black/10">
-                    {[
-                        { key: 'overview', label: '总览', icon: '📊' },
-                        { key: 'registration', label: '报名', icon: '📝' },
-                        { key: 'live', label: '直播间', icon: '📺' },
-                        { key: 'announcements', label: '公告', icon: '📢' },
-                    ].map((tab) => (
-                        <button
-                            key={tab.key}
-                            onClick={() => setActiveTab(tab.key as typeof activeTab)}
-                            className={`px-4 py-3 text-sm font-semibold rounded-t-lg transition-colors duration-200 flex items-center gap-2 ${activeTab === tab.key
-                                    ? 'bg-stone-700/80 text-amber-400 border-b-2 border-amber-400'
-                                    : 'bg-transparent text-gray-400 hover:bg-stone-700/50'
-                                }`}
-                        >
-                            <span>{tab.icon}</span>
-                            <span>{tab.label}</span>
-                        </button>
-                    ))}
-                </div>
-
-                {/* 内容区域 */}
-                <div className="flex-grow overflow-y-auto scrollbar-xianxia p-6">
-                    {activeTab === 'overview' && (
-                        <div className="space-y-6">
-                            {/* 当前状态卡片 */}
-                            <div className="glass-morphism p-6 rounded-lg border border-stone-700/50">
-                                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                                    <span>🎯</span>
-                                    <span>赛事状态</span>
-                                </h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-black/30 p-4 rounded-lg">
-                                        <p className="text-sm text-gray-400 mb-1">当前状态</p>
-                                        <p className={`text-xl font-bold ${getStatusColor(currentStatus)}`}>
-                                            {getStatusText(currentStatus)}
-                                        </p>
-                                    </div>
-                                    <div className="bg-black/30 p-4 rounded-lg">
-                                        <p className="text-sm text-gray-400 mb-1">下次赛事</p>
-                                        <p className="text-xl font-bold text-white">
-                                            {gauntletSystem.nextEventDate
-                                                ? new Date(gauntletSystem.nextEventDate).toLocaleDateString('zh-CN')
-                                                : '待定'}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* 当前赛事信息 */}
-                            {currentEvent ? (
-                                <div className="glass-morphism p-6 rounded-lg border border-amber-500/30">
-                                    <h3 className="text-lg font-bold text-amber-400 mb-4 flex items-center gap-2">
-                                        <span>🏆</span>
-                                        <span>{currentEvent.name}</span>
-                                    </h3>
-                                    <div className="grid grid-cols-3 gap-4 text-center">
-                                        <div className="bg-black/30 p-3 rounded-lg">
-                                            <p className="text-2xl font-bold text-white">{currentEvent.contestants.length}</p>
-                                            <p className="text-sm text-gray-400">参赛者</p>
-                                        </div>
-                                        <div className="bg-black/30 p-3 rounded-lg">
-                                            <p className="text-2xl font-bold text-white">{currentEvent.currentRound}</p>
-                                            <p className="text-sm text-gray-400">当前轮次</p>
-                                        </div>
-                                        <div className="bg-black/30 p-3 rounded-lg">
-                                            <p className="text-2xl font-bold text-white">{currentEvent.judges.length}</p>
-                                            <p className="text-sm text-gray-400">评委</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="glass-morphism p-6 rounded-lg border border-stone-700/50 text-center">
-                                    <p className="text-4xl mb-4">🌙</p>
-                                    <p className="text-gray-400">当前没有进行中的赛事</p>
-                                    <p className="text-sm text-gray-500 mt-2">请等待下一届大闯关开启</p>
-                                </div>
-                            )}
-
-                            {/* 快捷操作 */}
-                            <div className="glass-morphism p-6 rounded-lg border border-stone-700/50">
-                                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                                    <span>⚡</span>
-                                    <span>快捷操作</span>
-                                </h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <button
-                                        className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white px-4 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        disabled={currentStatus !== 'idle'}
-                                        onClick={() => {
-                                            // TODO: 创建新赛事
-                                            alert('创建新赛事功能开发中...');
-                                        }}
-                                    >
-                                        <span>🎬</span>
-                                        <span>创建新赛事</span>
-                                    </button>
-                                    <button
-                                        className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white px-4 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        disabled={currentStatus !== 'registration'}
-                                        onClick={() => setActiveTab('registration')}
-                                    >
-                                        <span>📝</span>
-                                        <span>立即报名</span>
-                                    </button>
-                                    <button
-                                        className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white px-4 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        disabled={currentStatus !== 'in_progress'}
-                                        onClick={() => setActiveTab('live')}
-                                    >
-                                        <span>📺</span>
-                                        <span>进入直播间</span>
-                                    </button>
-                                    <button
-                                        className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white px-4 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2"
-                                        onClick={() => setActiveTab('announcements')}
-                                    >
-                                        <span>📢</span>
-                                        <span>查看公告</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* 历史记录 */}
-                            <div className="glass-morphism p-6 rounded-lg border border-stone-700/50">
-                                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                                    <span>📜</span>
-                                    <span>历史赛事</span>
-                                </h3>
-                                {gauntletSystem.eventHistory.length > 0 ? (
-                                    <div className="space-y-2">
-                                        {gauntletSystem.eventHistory.slice(0, 5).map((event) => (
-                                            <div key={event.id} className="bg-black/30 p-3 rounded-lg flex justify-between items-center">
-                                                <div>
-                                                    <p className="text-white font-semibold">{event.name}</p>
-                                                    <p className="text-sm text-gray-400">
-                                                        冠军: {event.championName || '未知'}
-                                                    </p>
-                                                </div>
-                                                <span className="text-amber-400">🏆</span>
+                {/* 历史记录（如果有） */}
+                {gauntletSystem.eventHistory.length > 0 && (
+                    <div className="bg-black/20 rounded-lg p-4 md:p-6 border border-stone-700/30">
+                        <h4 className="text-lg font-bold text-amber-300 mb-3 flex items-center gap-2">
+                            <i className="fa-solid fa-trophy"></i>
+                            往届冠军
+                        </h4>
+                        <div className="space-y-2">
+                            {gauntletSystem.eventHistory.slice(0, 3).map((event, index) => (
+                                <div
+                                    key={event.id}
+                                    className="flex items-center justify-between bg-black/30 rounded p-3 hover:bg-black/40 transition-colors"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-2xl">
+                                            {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                                        </span>
+                                        <div>
+                                            <div className="font-semibold text-white">{event.name}</div>
+                                            <div className="text-xs text-gray-400">
+                                                冠军：{event.championName}
                                             </div>
-                                        ))}
+                                        </div>
                                     </div>
-                                ) : (
-                                    <p className="text-gray-500 text-center py-4">暂无历史赛事记录</p>
-                                )}
-                            </div>
-
-                            {/* 玩家统计 */}
-                            <div className="glass-morphism p-6 rounded-lg border border-stone-700/50">
-                                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                                    <span>📈</span>
-                                    <span>我的战绩</span>
-                                </h3>
-                                <div className="grid grid-cols-4 gap-4 text-center">
-                                    <div className="bg-black/30 p-3 rounded-lg">
-                                        <p className="text-2xl font-bold text-white">{gauntletSystem.playerStats.participations}</p>
-                                        <p className="text-xs text-gray-400">参赛次数</p>
-                                    </div>
-                                    <div className="bg-black/30 p-3 rounded-lg">
-                                        <p className="text-2xl font-bold text-amber-400">{gauntletSystem.playerStats.wins}</p>
-                                        <p className="text-xs text-gray-400">夺冠次数</p>
-                                    </div>
-                                    <div className="bg-black/30 p-3 rounded-lg">
-                                        <p className="text-2xl font-bold text-white">
-                                            {gauntletSystem.playerStats.bestRank > 0 ? `第${gauntletSystem.playerStats.bestRank}` : '-'}
-                                        </p>
-                                        <p className="text-xs text-gray-400">最佳名次</p>
-                                    </div>
-                                    <div className="bg-black/30 p-3 rounded-lg">
-                                        <p className="text-2xl font-bold text-white">
-                                            {gauntletSystem.playerStats.averageRank > 0 ? gauntletSystem.playerStats.averageRank.toFixed(1) : '-'}
-                                        </p>
-                                        <p className="text-xs text-gray-400">平均名次</p>
+                                    <div className="text-xs text-gray-500">
+                                        {new Date(event.date).toLocaleDateString()}
                                     </div>
                                 </div>
-                            </div>
+                            ))}
                         </div>
-                    )}
-
-                    {activeTab === 'registration' && (
-                        <div className="text-center py-12">
-                            <p className="text-4xl mb-4">📝</p>
-                            <p className="text-xl text-gray-400">报名界面</p>
-                            <p className="text-sm text-gray-500 mt-2">功能开发中...</p>
-                            {currentStatus === 'registration' ? (
-                                <div className="mt-6">
-                                    <p className="text-green-400 mb-4">报名通道已开启！</p>
-                                    <button className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white px-6 py-3 rounded-lg font-semibold">
-                                        选择角色报名
-                                    </button>
-                                </div>
-                            ) : (
-                                <p className="text-yellow-400 mt-4">当前不在报名阶段</p>
-                            )}
-                        </div>
-                    )}
-
-                    {activeTab === 'live' && (
-                        <div className="text-center py-12">
-                            <p className="text-4xl mb-4">📺</p>
-                            <p className="text-xl text-gray-400">直播间界面</p>
-                            <p className="text-sm text-gray-500 mt-2">功能开发中...</p>
-                            {currentStatus === 'in_progress' ? (
-                                <div className="mt-6">
-                                    <p className="text-red-400 mb-4 animate-pulse">🔴 直播中</p>
-                                    <button className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white px-6 py-3 rounded-lg font-semibold">
-                                        进入直播间
-                                    </button>
-                                </div>
-                            ) : (
-                                <p className="text-yellow-400 mt-4">当前没有进行中的直播</p>
-                            )}
-                        </div>
-                    )}
-
-                    {activeTab === 'announcements' && (
-                        <div className="space-y-4">
-                            <div className="text-center py-8">
-                                <p className="text-4xl mb-4">📢</p>
-                                <p className="text-xl text-gray-400">公告栏</p>
-                            </div>
-
-                            {/* 关卡预告 */}
-                            {currentEvent && currentEvent.rounds.length > 0 && (
-                                <div className="glass-morphism p-4 rounded-lg border border-stone-700/50">
-                                    <h4 className="text-lg font-bold text-amber-400 mb-3">🎯 关卡预告</h4>
-                                    <div className="space-y-2">
-                                        {currentEvent.rounds.map((round, index) => (
-                                            <div key={index} className="bg-black/30 p-3 rounded-lg">
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-white font-semibold">
-                                                        第{round.roundNumber}轮: {round.challenge?.name || '待公布'}
-                                                    </span>
-                                                    <span className={`text-sm ${round.status === 'completed' ? 'text-green-400' :
-                                                            round.status === 'in_progress' ? 'text-red-400' :
-                                                                'text-gray-400'
-                                                        }`}>
-                                                        {round.status === 'completed' ? '已完成' :
-                                                            round.status === 'in_progress' ? '进行中' :
-                                                                '待开始'}
-                                                    </span>
-                                                </div>
-                                                {round.challenge?.type && (
-                                                    <p className="text-sm text-gray-400 mt-1">
-                                                        类型: {round.challenge.type} | 难度: {round.challenge.difficulty}/10
-                                                    </p>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {!currentEvent && (
-                                <p className="text-gray-500 text-center">暂无公告</p>
-                            )}
-                        </div>
-                    )}
-                </div>
-
-                {/* 底部信息 */}
-                <div className="flex-shrink-0 p-4 bg-black/20 border-t border-stone-700/50">
-                    <div className="flex justify-between items-center text-sm text-gray-400">
-                        <span>💡 大闯关是修仙界最盛大的综艺赛事，64位佳丽同台竞技</span>
-                        <span>版本 v1.0</span>
                     </div>
-                </div>
+                )}
             </div>
-        </div>
+        </ResponsiveModal>
     );
 };
 

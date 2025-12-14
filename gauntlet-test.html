@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大闯关系统测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(to bottom right, #1a1a2e, #16213e, #0f3460);
+            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        .ornate-border {
+            border: 2px solid;
+            border-image: linear-gradient(135deg, #d4af37, #f4d03f, #d4af37) 1;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+        }
+        
+        .text-gradient-gold {
+            background: linear-gradient(135deg, #d4af37, #f4d03f, #d4af37);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-drag-indicator {
+            width: 40px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            margin: 0 auto;
+        }
+        
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .animate-pulse-slow {
+            animation: pulse-slow 2s ease-in-out infinite;
+        }
+        
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .animate-fade-in {
+            animation: fade-in 0.3s ease-out;
+        }
+        
+        @keyframes slide-up-mobile {
+            from { 
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to { 
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .animate-slide-up-mobile {
+            animation: slide-up-mobile 0.3s ease-out;
+        }
+        
+        .scrollbar-xianxia::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .scrollbar-xianxia::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        
+        .scrollbar-xianxia::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #d4af37, #f4d03f);
+            border-radius: 4px;
+        }
+        
+        .scrollbar-xianxia::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #f4d03f, #d4af37);
+        }
+    </style>
+</head>
+<body>
+    <div id="root" class="min-h-screen flex items-center justify-center p-4">
+        <div class="text-center">
+            <h1 class="text-4xl font-bold text-gradient-gold mb-8">🎪 大闯关系统测试</h1>
+            <button 
+                id="openHallBtn"
+                class="px-8 py-4 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-lg rounded-lg shadow-lg transition-all duration-200"
+            >
+                <i class="fa-solid fa-door-open mr-2"></i>
+                打开大闯关大厅
+            </button>
+            
+            <div class="mt-8 text-gray-300 text-sm">
+                <p>测试说明：</p>
+                <p>1. 点击按钮打开大厅界面</p>
+                <p>2. 查看倒计时、赛事信息等显示是否正常</p>
+                <p>3. 测试按钮状态（根据赛事状态启用/禁用）</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modalContainer"></div>
+
+    <script type="module">
+        // 模拟 GameState 数据
+        const mockGameState = {
+            gauntletSystem: {
+                currentEvent: null,
+                eventHistory: [
+                    {
+                        id: 'event-001',
+                        edition: 1,
+                        name: '第一届青蛇宗大闯关',
+                        date: Date.now() - 30 * 24 * 60 * 60 * 1000,
+                        championName: '灵月仙子'
+                    },
+                    {
+                        id: 'event-002',
+                        edition: 2,
+                        name: '第二届青蛇宗大闯关',
+                        date: Date.now() - 60 * 24 * 60 * 60 * 1000,
+                        championName: '夜宸魔君'
+                    }
+                ],
+                totalEditions: 2,
+                nextEventDate: Date.now() + 7 * 24 * 60 * 60 * 1000,
+                playerStats: {
+                    participations: 0,
+                    wins: 0,
+                    bestRank: 0,
+                    totalScore: 0,
+                    averageRank: 0
+                },
+                config: {
+                    monthlySchedule: 15,
+                    registrationDuration: 24,
+                    enableAutoGeneration: true,
+                    preparationDuration: 48
+                }
+            }
+        };
+
+        // 简化的 GauntletHallModal 组件
+        function createHallModal() {
+            const container = document.getElementById('modalContainer');
+            const { gauntletSystem } = mockGameState;
+            const currentEvent = gauntletSystem.currentEvent;
+            
+            container.innerHTML = `
+                <div class="fixed inset-0 bg-black/80 z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-fade-in">
+                    <div class="modal-responsive ornate-border border-amber-600 bg-gradient-to-br from-stone-800 via-stone-900 to-stone-950 w-full md:max-w-4xl h-[90vh] md:h-auto md:max-h-[85vh] rounded-t-2xl md:rounded-xl shadow-2xl overflow-hidden backdrop-blur-lg flex flex-col animate-slide-up-mobile">
+                        
+                        <!-- 移动端拖动指示器 -->
+                        <div class="md:hidden flex-shrink-0 pt-2 pb-1 bg-black/10">
+                            <div class="modal-drag-indicator"></div>
+                        </div>
+
+                        <!-- 标题栏 -->
+                        <div class="flex-shrink-0 bg-black/20 border-b border-stone-700/50">
+                            <div class="flex justify-between items-center p-3 md:p-4">
+                                <h2 class="text-lg md:text-2xl font-bold text-gradient-gold truncate pr-2">
+                                    🎪 大闯关大厅
+                                </h2>
+                                <button id="closeBtn" class="text-amber-300 hover:text-white transition-colors text-xl md:text-2xl">
+                                    <i class="fa-solid fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 内容区 -->
+                        <div class="flex-grow overflow-y-auto scrollbar-xianxia p-3 md:p-6">
+                            <div class="space-y-6">
+                                
+                                <!-- 赛事标题卡片 -->
+                                <div class="bg-gradient-to-r from-amber-900/30 via-amber-800/20 to-amber-900/30 rounded-lg p-6 border border-amber-700/30">
+                                    <div class="text-center">
+                                        <div class="text-5xl mb-3">🌙</div>
+                                        <h3 class="text-2xl md:text-3xl font-bold text-amber-300 mb-2">
+                                            青蛇宗大闯关
+                                        </h3>
+                                        <div class="text-lg md:text-xl text-gray-400 font-semibold mb-2">
+                                            暂无赛事
+                                        </div>
+                                        <p class="text-gray-400 text-sm md:text-base">当前没有正在进行的大闯关赛事</p>
+                                    </div>
+                                </div>
+
+                                <!-- 赛事信息占位 -->
+                                <div class="bg-black/20 rounded-lg p-4 md:p-6 border border-stone-700/30">
+                                    <h4 class="text-lg font-bold text-amber-300 mb-3 flex items-center gap-2">
+                                        <i class="fa-solid fa-info-circle"></i>
+                                        赛事规则
+                                    </h4>
+                                    <div class="text-gray-300 text-sm md:text-base space-y-2">
+                                        <p>• 参赛人数：64人（63名AI选手 + 1名玩家）</p>
+                                        <p>• 比赛轮次：6轮淘汰赛</p>
+                                        <p>• 评委人数：3-5位专业评委</p>
+                                        <p>• 赛制说明：每轮由评委现场打分，得分最高者晋级</p>
+                                    </div>
+                                </div>
+
+                                <!-- 操作按钮 -->
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <button disabled class="py-4 px-6 rounded-lg font-semibold text-base md:text-lg bg-gray-700/50 text-gray-500 cursor-not-allowed">
+                                        <i class="fa-solid fa-bullhorn mr-2"></i>
+                                        查看公告
+                                    </button>
+                                    <button disabled class="py-4 px-6 rounded-lg font-semibold text-base md:text-lg bg-gray-700/50 text-gray-500 cursor-not-allowed">
+                                        <i class="fa-solid fa-pen-to-square mr-2"></i>
+                                        暂未开放
+                                    </button>
+                                    <button disabled class="py-4 px-6 rounded-lg font-semibold text-base md:text-lg bg-gray-700/50 text-gray-500 cursor-not-allowed">
+                                        <i class="fa-solid fa-tv mr-2"></i>
+                                        暂未开始
+                                    </button>
+                                </div>
+
+                                <!-- 往届冠军 -->
+                                ${gauntletSystem.eventHistory.length > 0 ? `
+                                <div class="bg-black/20 rounded-lg p-4 md:p-6 border border-stone-700/30">
+                                    <h4 class="text-lg font-bold text-amber-300 mb-3 flex items-center gap-2">
+                                        <i class="fa-solid fa-trophy"></i>
+                                        往届冠军
+                                    </h4>
+                                    <div class="space-y-2">
+                                        ${gauntletSystem.eventHistory.slice(0, 3).map((event, index) => `
+                                            <div class="flex items-center justify-between bg-black/30 rounded p-3 hover:bg-black/40 transition-colors">
+                                                <div class="flex items-center gap-3">
+                                                    <span class="text-2xl">
+                                                        ${index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                                                    </span>
+                                                    <div>
+                                                        <div class="font-semibold text-white">${event.name}</div>
+                                                        <div class="text-xs text-gray-400">
+                                                            冠军：${event.championName}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="text-xs text-gray-500">
+                                                    ${new Date(event.date).toLocaleDateString()}
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                ` : ''}
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 绑定关闭按钮事件
+            document.getElementById('closeBtn').addEventListener('click', () => {
+                container.innerHTML = '';
+            });
+
+            // 点击背景关闭
+            container.querySelector('.fixed').addEventListener('click', (e) => {
+                if (e.target === e.currentTarget) {
+                    container.innerHTML = '';
+                }
+            });
+        }
+
+        // 绑定打开按钮事件
+        document.getElementById('openHallBtn').addEventListener('click', createHallModal);
+    </script>
+</body>
+</html>

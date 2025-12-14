@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
   <head>
@@ -6,8 +7,7 @@
     <title>仙侠卡牌RPG</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- 水墨书法字体 -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;300;400;500;600;700&family=ZCOOL+XiaoWei&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -16,84 +16,26 @@
           extend: {
             fontFamily: {
               'serif': ['"Noto Serif SC"', 'serif'],
-              'sans': ['"Noto Serif SC"', 'serif'],
-              'brush': ['"Ma Shan Zheng"', '"ZCOOL XiaoWei"', 'cursive'],
-              'elegant': ['"ZCOOL XiaoWei"', '"Noto Serif SC"', 'serif'],
-            },
-            colors: {
-              // 水墨主色调
-              'ink': {
-                50: '#fafafa',
-                100: '#f5f5f5',
-                200: '#e5e5e5',
-                300: '#d4d4d4',
-                400: '#a3a3a3',
-                500: '#737373',
-                600: '#525252',
-                700: '#404040',
-                800: '#262626',
-                900: '#171717',
-                950: '#0a0a0a',
-              },
-              // 宣纸色
-              'paper': {
-                50: '#fefdfb',
-                100: '#fdf9f3',
-                200: '#faf3e8',
-                300: '#f5ead8',
-                400: '#ede0c8',
-                500: '#e2d4b8',
-                600: '#d4c4a8',
-                700: '#c4b498',
-                800: '#b0a088',
-                900: '#968878',
-              },
-              // 淡金点缀
-              'gold': {
-                50: '#fffbeb',
-                100: '#fef3c7',
-                200: '#fde68a',
-                300: '#fcd34d',
-                400: '#d4a574',
-                500: '#b8956a',
-                600: '#9a7b55',
-                700: '#7c6244',
-                800: '#5e4a33',
-                900: '#403222',
-              },
-              // 朱砂红（偶尔点缀）
-              'cinnabar': {
-                400: '#c75050',
-                500: '#a63d3d',
-                600: '#8b3030',
-              },
+              'sans': ['"Inter"', 'sans-serif'],
             },
             animation: {
-              'fade-in': 'fadeIn 0.6s ease-out',
-              'slide-up': 'slideUp 0.4s ease-out',
-              'pulse-soft': 'pulseSoft 3s ease-in-out infinite',
+              'fade-in': 'fadeIn 0.5s ease-in-out',
+              'slide-up': 'slideUp 0.3s ease-out',
               'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
               'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
               'flash': 'flash 0.5s ease-out',
-              'glow': 'inkGlow 3s ease-in-out infinite alternate',
-              'float': 'float 4s ease-in-out infinite',
+              'glow': 'glow 2s ease-in-out infinite alternate',
+              'float': 'float 3s ease-in-out infinite',
               'marquee': 'marquee 40s linear infinite',
-              'ink-spread': 'inkSpread 1.5s ease-out forwards',
-              'brush-stroke': 'brushStroke 0.8s ease-out',
-              'mist-float': 'mistFloat 8s ease-in-out infinite',
             },
             keyframes: {
               fadeIn: {
-                '0%': { opacity: 0, transform: 'translateY(10px)' },
-                '100%': { opacity: 1, transform: 'translateY(0)' },
+                '0%': { opacity: 0 },
+                '100%': { opacity: 1 },
               },
               slideUp: {
                 '0%': { transform: 'translateY(100%)', opacity: 0.8 },
                 '100%': { transform: 'translateY(0)', opacity: 1 },
-              },
-              pulseSoft: {
-                '0%, 100%': { opacity: 0.8 },
-                '50%': { opacity: 1 },
               },
               shake: {
                 '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
@@ -105,38 +47,18 @@
                 '0%, 100%': { opacity: 1 },
                 '50%': { opacity: 0.1 },
               },
-              inkGlow: {
-                'from': { textShadow: '0 0 8px rgba(180, 160, 120, 0.3), 0 0 16px rgba(180, 160, 120, 0.1)' },
-                'to': { textShadow: '0 0 12px rgba(180, 160, 120, 0.5), 0 0 24px rgba(180, 160, 120, 0.2)' },
+              glow: {
+                'from': { textShadow: '0 0 5px #fef08a, 0 0 10px #fef08a, 0 0 15px #fde047' },
+                'to': { textShadow: '0 0 10px #facc15, 0 0 20px #facc15, 0 0 30px #eab308' },
               },
-              float: {
+               float: {
                 '0%, 100%': { transform: 'translateY(0px)' },
-                '50%': { transform: 'translateY(-6px)' },
+                '50%': { transform: 'translateY(-8px)' },
               },
               marquee: {
                 '0%': { transform: 'translateX(0)' },
                 '100%': { transform: 'translateX(-50%)' },
               },
-              inkSpread: {
-                '0%': { transform: 'scale(0.8)', opacity: 0, filter: 'blur(4px)' },
-                '100%': { transform: 'scale(1)', opacity: 1, filter: 'blur(0)' },
-              },
-              brushStroke: {
-                '0%': { clipPath: 'inset(0 100% 0 0)' },
-                '100%': { clipPath: 'inset(0 0 0 0)' },
-              },
-              mistFloat: {
-                '0%, 100%': { transform: 'translateX(0) translateY(0)', opacity: 0.3 },
-                '25%': { transform: 'translateX(10px) translateY(-5px)', opacity: 0.5 },
-                '50%': { transform: 'translateX(5px) translateY(5px)', opacity: 0.4 },
-                '75%': { transform: 'translateX(-5px) translateY(-3px)', opacity: 0.5 },
-              },
-            },
-            boxShadow: {
-              'ink': '0 4px 20px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)',
-              'ink-lg': '0 8px 40px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.1)',
-              'gold-glow': '0 0 20px rgba(180, 149, 106, 0.3)',
-              'inner-ink': 'inset 0 2px 10px rgba(0, 0, 0, 0.1)',
             },
           },
         },
@@ -153,97 +75,40 @@
 }
 </script>
 <style>
-    /* ===== 水墨风格主题 ===== */
-    :root {
-        /* 水墨色彩变量 */
-        --ink-darkest: #0a0a0a;
-        --ink-dark: #1a1a1a;
-        --ink-medium: #2d2d2d;
-        --ink-light: #404040;
-        --ink-lighter: #525252;
-        --ink-faint: #737373;
-        
-        /* 宣纸色 */
-        --paper-white: #fdfbf7;
-        --paper-cream: #f5f0e6;
-        --paper-aged: #e8e0d0;
-        
-        /* 淡金点缀 */
-        --gold-light: #d4b896;
-        --gold-medium: #b8956a;
-        --gold-dark: #8b7355;
-        
-        /* 朱砂红 */
-        --cinnabar: #a63d3d;
-        
-        /* 水墨渐变 */
-        --ink-gradient: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(35, 35, 35, 0.9) 50%, rgba(25, 25, 25, 0.95) 100%);
-        --paper-gradient: linear-gradient(180deg, rgba(253, 251, 247, 0.08) 0%, rgba(245, 240, 230, 0.03) 100%);
-    }
-
-    /* 响应式布局 - 移动端和桌面端自适应 */
+    /* 固定尺寸布局 - 540px × 960px */
     html {
         margin: 0;
         padding: 0;
-        width: 100%;
-        overflow-x: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+        background-color: #1a1a1a; /* 外部背景色 */
         overflow-y: auto;
     }
     
     body {
         margin: 0;
         padding: 0;
-        min-height: 100vh;
-        width: 100%;
-        /* 水墨山水背景 */
-        background-color: var(--ink-darkest);
-        background-image: 
-            /* 水墨云雾效果层 */
-            radial-gradient(ellipse at 20% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
-            radial-gradient(ellipse at 80% 80%, rgba(255, 255, 255, 0.02) 0%, transparent 50%),
-            radial-gradient(ellipse at 50% 50%, rgba(180, 149, 106, 0.02) 0%, transparent 70%),
-            /* 主背景 - 水墨山水 */
-            url('https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=1920&q=80');
+        width: 540px;
+        height: 960px;
+        background-image: url('https://github.com/zzq0219/sillytavern/blob/main/%E3%80%90%E5%93%B2%E9%A3%8E%E5%A3%81%E7%BA%B8%E3%80%91%E4%BA%91%E9%9B%BE-%E4%BB%99%E4%BE%A0.png?raw=true');
         background-size: cover;
         background-position: center;
         background-attachment: scroll;
-        overflow-x: hidden;
-        scroll-behavior: smooth;
-        -webkit-overflow-scrolling: touch;
-        font-family: 'Noto Serif SC', serif;
-    }
-    
-    /* 添加全局水墨纹理叠加 */
-    body::before {
-        content: '';
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: 
-            /* 宣纸纹理 */
-            url('https://www.transparenttextures.com/patterns/rice-paper-3.png'),
-            var(--ink-gradient);
-        opacity: 0.88;
-        pointer-events: none;
-        z-index: 0;
+        background-color: #0c0a09; /* stone-950 */
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.8); /* 添加阴影使容器突出 */
     }
 
-    /* 桌面端使用固定背景 */
-    @media (min-width: 768px) {
-        body {
-            background-attachment: fixed;
-        }
-    }
-
-    /* 响应式根容器 */
+    /* 固定尺寸根容器 */
     #root {
-        min-height: 100vh;
+        width: 540px;
+        height: 960px;
         display: flex;
         flex-direction: column;
-        position: relative;
-        z-index: 1;
+        overflow: hidden;
     }
 
     /* 优化触控体验 */
@@ -256,135 +121,77 @@
         -webkit-user-select: none;
         user-select: none;
     }
-
-    /* 水墨风格文本排版 */
+    /* 优化文本排版 */
     .prose {
-        --tw-prose-body: #d4d4d4;
-        --tw-prose-headings: var(--gold-light);
-        --tw-prose-invert-body: #d4d4d4;
-        --tw-prose-invert-headings: var(--gold-light);
-        line-height: 2;
-        letter-spacing: 0.05em;
+        --tw-prose-body: #d6d3d1;
+        --tw-prose-headings: #fde047;
+        --tw-prose-invert-body: #d6d3d1;
+        --tw-prose-invert-headings: #fde047;
+        line-height: 1.8;
+        letter-spacing: 0.02em;
     }
 
-    /* 水墨风格滚动条 */
+    /* 优化滚动条样式 */
     ::-webkit-scrollbar {
-        width: 4px;
-        height: 4px;
+        width: 6px;
+        height: 6px;
     }
     ::-webkit-scrollbar-track {
-        background: rgba(20, 20, 20, 0.6);
+        background: rgba(28, 25, 23, 0.5);
+        backdrop-filter: blur(4px);
     }
     ::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, var(--gold-medium) 0%, var(--gold-dark) 100%);
-        border-radius: 2px;
+        background: #57534e;
+        border-radius: 3px;
+        transition: background 0.2s;
     }
     ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold-medium) 100%);
+        background: #78716c;
     }
 
     /* 通用动画 - 按钮反馈 */
     @keyframes button-press {
         0% { transform: scale(1); }
-        50% { transform: scale(0.97); }
+        50% { transform: scale(0.95); }
         100% { transform: scale(1); }
     }
 
-    /* 焦点优化 - 使用淡金色 */
+    /* 焦点优化 */
     :focus-visible {
-        outline: 1px solid var(--gold-medium);
+        outline: 2px solid #facc15;
         outline-offset: 2px;
-        border-radius: 2px;
+        border-radius: 4px;
     }
 
-    /* ===== 水墨风格组件 ===== */
-    
-    /* 水墨边框 */
-    .ink-border {
-        border: 1px solid rgba(180, 149, 106, 0.3);
-        box-shadow: 
-            inset 0 0 20px rgba(0, 0, 0, 0.3),
-            0 0 1px rgba(180, 149, 106, 0.2);
-    }
-
-    /* 水墨卡片 */
-    .ink-card {
-        background: linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(20, 20, 20, 0.98) 100%);
-        border: 1px solid rgba(180, 149, 106, 0.2);
-        box-shadow: 
-            0 4px 20px rgba(0, 0, 0, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(8px);
-    }
-
-    /* 水墨按钮基础样式 */
-    .ink-btn {
-        background: linear-gradient(135deg, rgba(40, 40, 40, 0.9) 0%, rgba(30, 30, 30, 0.95) 100%);
-        border: 1px solid rgba(180, 149, 106, 0.3);
-        color: var(--gold-light);
-        transition: all 0.3s ease;
+    .ornate-border {
+        border: 10px solid;
+        border-image-slice: 40 42;
+        border-image-width: 15px;
+        border-image-outset: 0;
+        border-image-repeat: stretch;
+        border-image-source: url('https://i.imgur.com/z4b2r4j.png');
         position: relative;
-        overflow: hidden;
     }
-    
-    .ink-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(180, 149, 106, 0.1), transparent);
-        transition: left 0.5s ease;
-    }
-    
-    .ink-btn:hover::before {
-        left: 100%;
-    }
-    
-    .ink-btn:hover {
-        border-color: rgba(180, 149, 106, 0.5);
-        box-shadow: 0 0 15px rgba(180, 149, 106, 0.15);
-    }
-
-    /* 水墨标题样式 */
-    .ink-title {
-        color: var(--gold-light);
-        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-        letter-spacing: 0.1em;
-    }
-
-    /* 毛笔字效果 */
-    .brush-text {
-        font-family: 'Ma Shan Zheng', 'ZCOOL XiaoWei', cursive;
-        letter-spacing: 0.15em;
-    }
-
-    /* 卷轴容器 - 水墨版 */
     .scroll-container {
-        background: linear-gradient(180deg, rgba(253, 251, 247, 0.95) 0%, rgba(245, 240, 230, 0.95) 100%);
-        color: #2d2d2d;
-        border: none;
-        box-shadow: 
-            0 10px 40px rgba(0, 0, 0, 0.5),
-            inset 0 0 60px rgba(0, 0, 0, 0.05);
-        padding: 2rem;
-        position: relative;
+      background-image: url('https://www.transparenttextures.com/patterns/old-paper-2.png'), linear-gradient(to bottom, #f5eadd, #d8c9b3);
+      background-color: #e4d8c5; /* A base parchment color */
+      color: #402e1a;
+      border: 2px solid #a89379;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+      padding: 1rem 2rem;
+      border-radius: 2px;
     }
-    
     .scroll-container .prose {
-        --tw-prose-body: #3d3d3d;
-        --tw-prose-headings: #5c4a3a;
+        --tw-prose-body: #5c452b;
+        --tw-prose-headings: #8c6a48;
     }
-
-    /* 神品彩虹效果保留但调整为更淡雅 */
     .text-rainbow {
-        background-image: linear-gradient(to right, #a3a3a3, #d4b896, #b8956a, #a3a3a3);
+        background-image: linear-gradient(to right, #f87171, #fb923c, #facc15, #4ade80, #38bdf8, #a78bfa, #f472b6);
         background-size: 200% auto;
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
-        animation: rainbow-flow 4s linear infinite;
+        animation: rainbow-flow 3s linear infinite;
     }
     @keyframes rainbow-flow {
         to {
@@ -402,23 +209,23 @@
         -webkit-backdrop-filter: blur(12px);
     }
 
-    /* 水墨卡片阴影 */
+    /* 卡片阴影层级 */
     .shadow-card {
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     .shadow-card-hover {
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25), 0 4px 8px rgba(0, 0, 0, 0.15);
     }
 
-    /* 加载动画优化 - 使用淡金色 */
+    /* 加载动画优化 */
     @keyframes pulse-glow {
         0%, 100% {
             opacity: 1;
-            box-shadow: 0 0 0 0 rgba(180, 149, 106, 0.5);
+            box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7);
         }
         50% {
             opacity: 0.8;
-            box-shadow: 0 0 0 10px rgba(180, 149, 106, 0);
+            box-shadow: 0 0 0 10px rgba(251, 191, 36, 0);
         }
     }
 
@@ -445,721 +252,13 @@
             justify-content: center;
         }
     }
-
-    /* ===== 水墨装饰元素 ===== */
-    
-    /* 水墨分隔线 */
-    .ink-divider {
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(180, 149, 106, 0.4), transparent);
-        border: none;
-        margin: 1rem 0;
-    }
-
-    /* 印章效果 */
-    .seal-stamp {
-        display: inline-block;
-        padding: 0.25rem 0.5rem;
-        border: 2px solid var(--cinnabar);
-        color: var(--cinnabar);
-        font-family: 'Ma Shan Zheng', cursive;
-        transform: rotate(-5deg);
-        opacity: 0.9;
-    }
-
-    /* 水墨晕染背景 */
-    .ink-wash {
-        background: radial-gradient(ellipse at center, rgba(60, 60, 60, 0.3) 0%, transparent 70%);
-    }
-
-    /* 云雾装饰 */
-    .mist-decoration {
-        position: absolute;
-        width: 200px;
-        height: 100px;
-        background: radial-gradient(ellipse, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
-        pointer-events: none;
-        animation: mistFloat 8s ease-in-out infinite;
-    }
-
-    /* 竹节边框装饰 */
-    .bamboo-corner::before {
-        content: '◆';
-        position: absolute;
-        top: -8px;
-        left: -8px;
-        color: var(--gold-medium);
-        font-size: 12px;
-        opacity: 0.6;
-    }
-    
-    .bamboo-corner::after {
-        content: '◆';
-        position: absolute;
-        bottom: -8px;
-        right: -8px;
-        color: var(--gold-medium);
-        font-size: 12px;
-        opacity: 0.6;
-    }
-
-    /* 古典边框 */
-    .classic-border {
-        border: 1px solid rgba(180, 149, 106, 0.3);
-        position: relative;
-    }
-    
-    .classic-border::before {
-        content: '';
-        position: absolute;
-        top: 3px;
-        left: 3px;
-        right: 3px;
-        bottom: 3px;
-        border: 1px solid rgba(180, 149, 106, 0.15);
-        pointer-events: none;
-    }
-
-    /* 渐隐边缘效果 */
-    .fade-edges {
-        mask-image: linear-gradient(to bottom, 
-            transparent 0%, 
-            black 5%, 
-            black 95%, 
-            transparent 100%);
-        -webkit-mask-image: linear-gradient(to bottom, 
-            transparent 0%, 
-            black 5%, 
-            black 95%, 
-            transparent 100%);
-    }
-
-    /* 墨迹溅射效果（用于特殊状态） */
-    .ink-splash {
-        position: relative;
-    }
-    
-    .ink-splash::after {
-        content: '';
-        position: absolute;
-        top: -5px;
-        right: -5px;
-        width: 20px;
-        height: 20px;
-        background: radial-gradient(circle at 30% 30%, rgba(40, 40, 40, 0.8) 0%, transparent 60%);
-        pointer-events: none;
-    }
-
-    /* 悬浮状态的墨晕效果 */
-    .hover-ink-glow {
-        transition: all 0.3s ease;
-    }
-    
-    .hover-ink-glow:hover {
-        box-shadow: 
-            0 0 20px rgba(180, 149, 106, 0.15),
-            inset 0 0 20px rgba(180, 149, 106, 0.05);
-    }
-
-    /* 文字墨迹效果 */
-    .text-ink-effect {
-        text-shadow:
-            1px 1px 2px rgba(0, 0, 0, 0.3),
-            -1px -1px 1px rgba(255, 255, 255, 0.05);
-    }
-
-    /* ===== 修仙风格装饰增强 ===== */
-    
-    /* 八卦旋转装饰 */
-    .bagua-spin {
-        display: inline-block;
-        animation: baguaSpin 20s linear infinite;
-    }
-    
-    .bagua-spin::before {
-        content: '☯';
-        font-size: 1.5em;
-        color: var(--gold-medium);
-        opacity: 0.7;
-        display: block;
-    }
-    
-    @keyframes baguaSpin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-
-    /* 仙气缭绕效果 */
-    .immortal-mist {
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .immortal-mist::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 300%;
-        height: 100%;
-        background: linear-gradient(90deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.02) 20%,
-            rgba(180, 149, 106, 0.03) 40%,
-            rgba(255, 255, 255, 0.03) 60%,
-            rgba(180, 149, 106, 0.02) 80%,
-            transparent 100%);
-        animation: immortalMistFlow 12s linear infinite;
-        pointer-events: none;
-    }
-    
-    @keyframes immortalMistFlow {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(33.33%); }
-    }
-
-    /* 灵气流动按钮 */
-    .qi-flow-btn {
-        background: linear-gradient(135deg, rgba(40, 40, 40, 0.95) 0%, rgba(25, 25, 25, 0.98) 100%);
-        border: 1px solid rgba(180, 149, 106, 0.4);
-        color: var(--gold-light);
-        position: relative;
-        overflow: hidden;
-        transition: all 0.4s ease;
-    }
-    
-    .qi-flow-btn::before {
-        content: '';
-        position: absolute;
-        top: -2px;
-        left: -2px;
-        right: -2px;
-        bottom: -2px;
-        background: conic-gradient(from 0deg, transparent, rgba(184, 149, 106, 0.15), transparent, rgba(184, 149, 106, 0.1), transparent);
-        animation: qiRotate 8s linear infinite;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    
-    .qi-flow-btn:hover::before {
-        opacity: 1;
-    }
-    
-    .qi-flow-btn::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(180, 149, 106, 0.15), transparent);
-        transition: left 0.6s ease;
-    }
-    
-    .qi-flow-btn:hover::after {
-        left: 100%;
-    }
-    
-    .qi-flow-btn:hover {
-        border-color: rgba(180, 149, 106, 0.6);
-        box-shadow:
-            0 0 25px rgba(180, 149, 106, 0.2),
-            0 0 50px rgba(180, 149, 106, 0.1),
-            inset 0 0 20px rgba(180, 149, 106, 0.05);
-        text-shadow: 0 0 15px rgba(180, 149, 106, 0.6);
-    }
-    
-    @keyframes qiRotate {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-
-    /* 法阵装饰背景 */
-    .magic-circle-bg {
-        position: relative;
-    }
-    
-    .magic-circle-bg::before {
-        content: '✧';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 6rem;
-        color: var(--gold-medium);
-        opacity: 0.05;
-        animation: pulseSoft 4s ease-in-out infinite;
-        pointer-events: none;
-    }
-
-    /* 仙侠边框装饰 */
-    .xianxia-frame {
-        position: relative;
-        border: 1px solid rgba(180, 149, 106, 0.3);
-    }
-    
-    .xianxia-frame::before,
-    .xianxia-frame::after {
-        content: '';
-        position: absolute;
-        width: 20px;
-        height: 20px;
-        border: 1px solid rgba(180, 149, 106, 0.5);
-        pointer-events: none;
-    }
-    
-    .xianxia-frame::before {
-        top: -1px;
-        left: -1px;
-        border-right: none;
-        border-bottom: none;
-    }
-    
-    .xianxia-frame::after {
-        bottom: -1px;
-        right: -1px;
-        border-left: none;
-        border-top: none;
-    }
-
-    /* 四角祥云装饰 */
-    .cloud-corners {
-        position: relative;
-    }
-    
-    .cloud-corners::before {
-        content: '☁';
-        position: absolute;
-        top: 4px;
-        left: 8px;
-        font-size: 0.8rem;
-        color: var(--gold-medium);
-        opacity: 0.4;
-    }
-    
-    .cloud-corners::after {
-        content: '☁';
-        position: absolute;
-        bottom: 4px;
-        right: 8px;
-        font-size: 0.8rem;
-        color: var(--gold-medium);
-        opacity: 0.4;
-        transform: scaleX(-1);
-    }
-
-    /* 玉简风格标签 */
-    .jade-slip {
-        background: linear-gradient(135deg, rgba(180, 200, 180, 0.08) 0%, rgba(150, 180, 150, 0.04) 100%);
-        border: 1px solid rgba(180, 200, 180, 0.25);
-        color: rgba(200, 220, 200, 0.9);
-        padding: 0.25rem 0.75rem;
-        font-size: 0.85rem;
-        position: relative;
-    }
-    
-    .jade-slip::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(200, 220, 200, 0.4), transparent);
-    }
-    
-    .jade-slip::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(200, 220, 200, 0.2), transparent);
-    }
-
-    /* 灵石图标 */
-    .spirit-stone::before {
-        content: '◈';
-        margin-right: 0.3rem;
-        color: var(--gold-medium);
-        text-shadow: 0 0 8px rgba(184, 149, 106, 0.5);
-    }
-
-    /* 丹药图标 */
-    .elixir-icon::before {
-        content: '⚗';
-        margin-right: 0.3rem;
-        color: var(--cinnabar);
-        text-shadow: 0 0 6px rgba(166, 61, 61, 0.4);
-    }
-
-    /* 剑气图标 */
-    .sword-qi::before {
-        content: '⚔';
-        margin-right: 0.3rem;
-        color: var(--gold-light);
-        text-shadow: 0 0 8px rgba(212, 184, 150, 0.5);
-    }
-
-    /* 修为境界标识 */
-    .realm-mark {
-        background: linear-gradient(135deg, rgba(184, 149, 106, 0.15) 0%, rgba(140, 110, 70, 0.08) 100%);
-        border: 1px solid rgba(184, 149, 106, 0.35);
-        padding: 0.2rem 0.8rem;
-        clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
-        position: relative;
-    }
-    
-    .realm-mark::before {
-        content: '';
-        position: absolute;
-        inset: 1px;
-        background: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(15, 15, 15, 0.98) 100%);
-        clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
-        z-index: -1;
-    }
-
-    /* 技能/法术图标框 */
-    .skill-frame {
-        width: 52px;
-        height: 52px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, rgba(35, 35, 35, 0.95) 0%, rgba(25, 25, 25, 0.98) 100%);
-        border: 2px solid rgba(180, 149, 106, 0.35);
-        position: relative;
-    }
-    
-    .skill-frame::before {
-        content: '';
-        position: absolute;
-        inset: 3px;
-        border: 1px solid rgba(180, 149, 106, 0.2);
-    }
-    
-    .skill-frame::after {
-        content: '';
-        position: absolute;
-        inset: -4px;
-        border: 1px solid rgba(180, 149, 106, 0.1);
-    }
-    
-    .skill-frame:hover {
-        border-color: rgba(180, 149, 106, 0.6);
-        box-shadow: 0 0 15px rgba(180, 149, 106, 0.2);
-    }
-
-    /* 仙侠进度条 */
-    .cultivation-progress {
-        height: 10px;
-        background: rgba(20, 20, 20, 0.9);
-        border: 1px solid rgba(180, 149, 106, 0.25);
-        border-radius: 1px;
-        overflow: hidden;
-        position: relative;
-    }
-    
-    .cultivation-progress-bar {
-        height: 100%;
-        background: linear-gradient(90deg,
-            rgba(140, 110, 70, 0.7) 0%,
-            rgba(184, 149, 106, 0.9) 40%,
-            rgba(212, 181, 150, 1) 60%,
-            rgba(184, 149, 106, 0.9) 100%);
-        position: relative;
-        transition: width 0.6s ease;
-    }
-    
-    .cultivation-progress-bar::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-        animation: progressGlow 2.5s ease-in-out infinite;
-    }
-    
-    @keyframes progressGlow {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
-    }
-
-    /* 门派/势力徽章 */
-    .sect-emblem {
-        width: 64px;
-        height: 64px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: radial-gradient(circle, rgba(184, 149, 106, 0.08) 0%, transparent 70%);
-        border: 2px solid rgba(180, 149, 106, 0.25);
-        border-radius: 50%;
-        position: relative;
-    }
-    
-    .sect-emblem::before {
-        content: '';
-        position: absolute;
-        inset: 5px;
-        border: 1px solid rgba(180, 149, 106, 0.15);
-        border-radius: 50%;
-    }
-    
-    .sect-emblem::after {
-        content: '';
-        position: absolute;
-        inset: -8px;
-        border: 1px dashed rgba(180, 149, 106, 0.12);
-        border-radius: 50%;
-        animation: baguaSpin 40s linear infinite reverse;
-    }
-
-    /* 卷轴装饰标题 */
-    .scroll-title {
-        position: relative;
-        display: inline-block;
-        padding: 0 2.5rem;
-    }
-    
-    .scroll-title::before,
-    .scroll-title::after {
-        content: '〓';
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--gold-medium);
-        opacity: 0.5;
-        font-size: 0.75em;
-    }
-    
-    .scroll-title::before {
-        left: 0;
-    }
-    
-    .scroll-title::after {
-        right: 0;
-    }
-
-    /* 古典分隔装饰 */
-    .ancient-divider {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 0.5rem 0;
-    }
-    
-    .ancient-divider::before,
-    .ancient-divider::after {
-        content: '';
-        flex: 1;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(180, 149, 106, 0.4), transparent);
-    }
-    
-    .ancient-divider-symbol {
-        color: var(--gold-medium);
-        font-size: 0.8rem;
-        opacity: 0.6;
-    }
-
-    /* 浮动灵气粒子容器 */
-    .spirit-particles {
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        overflow: hidden;
-        z-index: 0;
-    }
-    
-    .spirit-particle {
-        position: absolute;
-        width: 4px;
-        height: 4px;
-        background: radial-gradient(circle, rgba(184, 149, 106, 0.6) 0%, transparent 70%);
-        border-radius: 50%;
-        animation: floatUp 18s linear infinite;
-    }
-    
-    @keyframes floatUp {
-        0% {
-            transform: translateY(100vh) translateX(0) scale(0);
-            opacity: 0;
-        }
-        10% {
-            transform: translateY(90vh) translateX(10px) scale(1);
-            opacity: 0.7;
-        }
-        90% {
-            transform: translateY(10vh) translateX(-10px) scale(1);
-            opacity: 0.7;
-        }
-        100% {
-            transform: translateY(0) translateX(0) scale(0);
-            opacity: 0;
-        }
-    }
-
-    /* 仙侠头像框 */
-    .avatar-frame {
-        position: relative;
-        padding: 4px;
-        background: linear-gradient(135deg, rgba(180, 149, 106, 0.3) 0%, rgba(140, 110, 70, 0.2) 100%);
-        border-radius: 50%;
-    }
-    
-    .avatar-frame::before {
-        content: '';
-        position: absolute;
-        inset: -2px;
-        border: 1px solid rgba(180, 149, 106, 0.2);
-        border-radius: 50%;
-    }
-    
-    .avatar-frame::after {
-        content: '';
-        position: absolute;
-        inset: -6px;
-        border: 1px dashed rgba(180, 149, 106, 0.1);
-        border-radius: 50%;
-        animation: baguaSpin 30s linear infinite;
-    }
-
-    /* 神品/仙品光效 */
-    .divine-glow {
-        position: relative;
-    }
-    
-    .divine-glow::before {
-        content: '';
-        position: absolute;
-        inset: -3px;
-        background: conic-gradient(from 0deg,
-            rgba(184, 149, 106, 0.3),
-            rgba(212, 181, 150, 0.4),
-            rgba(184, 149, 106, 0.3),
-            rgba(140, 110, 70, 0.3),
-            rgba(184, 149, 106, 0.3));
-        border-radius: inherit;
-        animation: divineRotate 6s linear infinite;
-        z-index: -1;
-    }
-    
-    @keyframes divineRotate {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-
-    /* 状态标签样式 */
-    .status-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.3rem;
-        padding: 0.15rem 0.5rem;
-        background: rgba(30, 30, 30, 0.9);
-        border: 1px solid rgba(180, 149, 106, 0.3);
-        font-size: 0.75rem;
-        color: var(--gold-light);
-    }
-    
-    .status-tag-positive {
-        border-color: rgba(150, 200, 150, 0.4);
-        color: rgba(180, 220, 180, 0.9);
-    }
-    
-    .status-tag-negative {
-        border-color: rgba(166, 61, 61, 0.4);
-        color: rgba(200, 100, 100, 0.9);
-    }
-
-    /* 提示气泡 */
-    .tooltip-xianxia {
-        position: relative;
-    }
-    
-    .tooltip-xianxia::after {
-        content: attr(data-tooltip);
-        position: absolute;
-        bottom: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 0.5rem 0.75rem;
-        background: linear-gradient(135deg, rgba(30, 30, 30, 0.98) 0%, rgba(20, 20, 20, 0.99) 100%);
-        border: 1px solid rgba(180, 149, 106, 0.4);
-        color: var(--gold-light);
-        font-size: 0.8rem;
-        white-space: nowrap;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s ease, transform 0.3s ease;
-        z-index: 100;
-    }
-    
-    .tooltip-xianxia:hover::after {
-        opacity: 1;
-        transform: translateX(-50%) translateY(-5px);
-    }
-
-    /* 动态数值变化 */
-    .value-change-positive {
-        color: rgba(150, 220, 150, 0.95);
-        animation: valueUp 0.5s ease-out;
-    }
-    
-    .value-change-negative {
-        color: rgba(220, 100, 100, 0.95);
-        animation: valueDown 0.5s ease-out;
-    }
-    
-    @keyframes valueUp {
-        0% { transform: translateY(0); opacity: 0; }
-        50% { transform: translateY(-10px); opacity: 1; }
-        100% { transform: translateY(-20px); opacity: 0; }
-    }
-    
-    @keyframes valueDown {
-        0% { transform: translateY(0); opacity: 0; }
-        50% { transform: translateY(10px); opacity: 1; }
-        100% { transform: translateY(20px); opacity: 0; }
-    }
 </style>
+<link rel="stylesheet" href="/index.css">
+<link rel="stylesheet" href="/styles/mobile-responsive.css">
+<link rel="stylesheet" href="/styles/fixed-container.css">
 </head>
-  <body class="bg-ink-950 text-ink-300 font-serif">
-    <!-- 浮动灵气粒子 -->
-    <div class="spirit-particles" id="spirit-particles"></div>
-    
+  <body class="bg-stone-950 text-stone-300 font-sans">
     <div id="root" class="w-full"></div>
-    
-    <script>
-      // 创建浮动灵气粒子效果
-      (function() {
-        const container = document.getElementById('spirit-particles');
-        if (!container) return;
-        
-        const colors = [
-          'rgba(184, 149, 106, 0.5)',
-          'rgba(212, 181, 150, 0.4)',
-          'rgba(180, 200, 180, 0.3)',
-          'rgba(200, 180, 160, 0.4)'
-        ];
-        
-        for (let i = 0; i < 20; i++) {
-          const particle = document.createElement('div');
-          particle.className = 'spirit-particle';
-          particle.style.left = Math.random() * 100 + '%';
-          particle.style.animationDelay = Math.random() * 18 + 's';
-          particle.style.animationDuration = (15 + Math.random() * 10) + 's';
-          particle.style.background = `radial-gradient(circle, ${colors[Math.floor(Math.random() * colors.length)]} 0%, transparent 70%)`;
-          particle.style.width = (3 + Math.random() * 4) + 'px';
-          particle.style.height = particle.style.width;
-          container.appendChild(particle);
-        }
-      })();
-    </script>
-    
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>

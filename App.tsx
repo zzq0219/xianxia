@@ -22,7 +22,6 @@ import ChallengeModal from './components/ChallengeModal';
 import CharacterDetail from './components/CharacterDetail';
 import CombatLog from './components/CombatLog';
 import { CultivationModal } from './components/CultivationModal';
-import GauntletHallModal from './components/gauntlet/GauntletHallModal';
 import HospitalModal from './components/HospitalModal';
 import InteractionModal from './components/InteractionModal';
 import InterrogationModal from './components/InterrogationModal';
@@ -244,7 +243,6 @@ const App: React.FC = () => {
     const [selectedPrisonerForInterrogation, setSelectedPrisonerForInterrogation] = useState<Prisoner | null>(null);
     const [interrogationLog, setInterrogationLog] = useState<string>('');
     const [isEtiquetteHallOpen, setIsEtiquetteHallOpen] = useState<boolean>(false);
-    const [isGauntletHallOpen, setIsGauntletHallOpen] = useState<boolean>(false);
     const [characterSelection, setCharacterSelection] = useState<{
         isOpen: boolean;
         title: string;
@@ -2529,12 +2527,15 @@ const App: React.FC = () => {
     return (
         <div
             ref={appRef}
-            className="flex flex-col font-serif min-h-screen overflow-x-hidden relative w-full"
+            className="flex flex-col font-serif relative"
             style={{
+                width: '540px',
+                height: '960px',
+                overflow: 'hidden',
                 backgroundImage: `url('https://github.com/zzq0219/sillytavern/blob/main/%E3%80%90%E5%93%B2%E9%A3%8E%E5%A3%81%E7%BA%B8%E3%80%91%E4%BA%91%E9%9B%BE-%E4%BB%99%E4%BE%A0.png?raw=true')`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                backgroundAttachment: typeof window !== 'undefined' && window.innerWidth > 768 ? 'fixed' : 'scroll'
+                backgroundAttachment: 'scroll'
             }}
         >
             <TopStatusBar
@@ -2596,7 +2597,6 @@ const App: React.FC = () => {
                     onCharacterStatusClick={() => setIsCharacterStatusModalOpen(true)}
                     onPrisonClick={() => setIsPrisonModalOpen(true)}
                     onEtiquetteHallClick={() => setIsEtiquetteHallOpen(true)}
-                    onGauntletClick={() => setIsGauntletHallOpen(true)}
                 />
             )}
 
@@ -3124,14 +3124,6 @@ const App: React.FC = () => {
                         },
                     });
                 }}
-            />
-
-            {/* 大闯关系统 */}
-            <GauntletHallModal
-                isOpen={isGauntletHallOpen}
-                onClose={() => setIsGauntletHallOpen(false)}
-                gameState={gameState}
-                onUpdateGameState={setGameState}
             />
 
             {isInterrogationModalOpen && selectedPrisonerForInterrogation && (

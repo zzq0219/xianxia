@@ -1,0 +1,384 @@
+/**
+ * 固定容器尺寸适配样式
+ * 容器固定为 540px × 960px，内部组件自适应
+ */
+
+/* ========================================
+   1. 全局容器设置
+   ======================================== */
+
+/* 强制所有内容适应固定容器 */
+#root * {
+  box-sizing: border-box;
+}
+
+/* ========================================
+   2. 顶栏适配 (固定高度)
+   ======================================== */
+
+/* 顶栏固定高度 48px */
+.fixed-container-topbar {
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  padding: 0.5rem !important;
+  font-size: 0.875rem !important;
+}
+
+/* 顶栏内的元素缩小 */
+.fixed-container-topbar .text-xl {
+  font-size: 1rem !important;
+}
+
+.fixed-container-topbar .text-lg {
+  font-size: 0.875rem !important;
+}
+
+/* ========================================
+   3. 底栏适配 (固定高度)
+   ======================================== */
+
+/* 底栏固定高度 100px */
+.fixed-container-bottombar {
+  height: 100px !important;
+  min-height: 100px !important;
+  max-height: 100px !important;
+  padding: 0.5rem !important;
+}
+
+/* 底栏按钮适配 */
+.fixed-container-bottombar button {
+  padding: 0.375rem 0.75rem !important;
+  font-size: 0.75rem !important;
+  min-height: 32px !important;
+}
+
+.fixed-container-bottombar .text-xs {
+  font-size: 0.625rem !important;
+}
+
+/* ========================================
+   4. 主内容区适配 (动态高度)
+   ======================================== */
+
+/* 主内容区：960px - 48px(顶栏) - 100px(底栏) = 812px */
+.fixed-container-main {
+  height: 812px !important;
+  max-height: 812px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 故事显示区域 */
+.fixed-container-story {
+  padding: 1rem !important;
+  font-size: 0.875rem !important;
+  line-height: 1.6 !important;
+}
+
+/* ========================================
+   5. 模态框适配
+   ======================================== */
+
+/* 模态框容器 */
+.fixed-container-modal {
+  width: 500px !important;
+  max-width: 500px !important;
+  max-height: 880px !important;
+  margin: 40px auto !important;
+}
+
+/* 模态框头部 */
+.fixed-container-modal-header {
+  padding: 0.75rem !important;
+  font-size: 1rem !important;
+}
+
+/* 模态框内容 */
+.fixed-container-modal-content {
+  max-height: 700px !important;
+  overflow-y: auto !important;
+  padding: 1rem !important;
+  font-size: 0.875rem !important;
+}
+
+/* ========================================
+   6. 卡片/网格布局适配
+   ======================================== */
+
+/* 角色卡片网格 - 固定为 3 列 */
+.fixed-container-card-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 0.5rem !important;
+  padding: 0.5rem !important;
+}
+
+/* 单个角色卡片 */
+.fixed-container-character-card {
+  width: 100% !important;
+  min-width: 0 !important;
+  aspect-ratio: 2/3 !important;
+}
+
+/* 卡片内文字 */
+.fixed-container-character-card .text-sm {
+  font-size: 0.75rem !important;
+}
+
+.fixed-container-character-card .text-xs {
+  font-size: 0.625rem !important;
+}
+
+/* ========================================
+   7. 战斗界面适配
+   ======================================== */
+
+/* 战斗场景容器 */
+.fixed-container-battlefield {
+  height: 400px !important;
+  max-height: 400px !important;
+}
+
+/* 战斗角色显示 */
+.fixed-container-battle-character {
+  max-width: 200px !important;
+  max-height: 300px !important;
+}
+
+/* 战斗动作面板 */
+.fixed-container-battle-actions {
+  height: 200px !important;
+  max-height: 200px !important;
+}
+
+/* 战斗叙述区域 */
+.fixed-container-battle-narrator {
+  height: 180px !important;
+  max-height: 180px !important;
+  overflow-y: auto !important;
+  font-size: 0.875rem !important;
+}
+
+/* ========================================
+   8. 按钮组适配
+   ======================================== */
+
+/* 按钮组 - 自动换行 */
+.fixed-container-btn-group {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.375rem !important;
+  justify-content: center !important;
+}
+
+/* 按钮尺寸 */
+.fixed-container-btn {
+  padding: 0.5rem 1rem !important;
+  font-size: 0.875rem !important;
+  min-height: 36px !important;
+  white-space: nowrap !important;
+}
+
+.fixed-container-btn-sm {
+  padding: 0.375rem 0.75rem !important;
+  font-size: 0.75rem !important;
+  min-height: 32px !important;
+}
+
+/* ========================================
+   9. 列表适配
+   ======================================== */
+
+/* 列表容器 */
+.fixed-container-list {
+  max-height: 600px !important;
+  overflow-y: auto !important;
+}
+
+/* 列表项 */
+.fixed-container-list-item {
+  padding: 0.75rem !important;
+  font-size: 0.875rem !important;
+}
+
+/* ========================================
+   10. 表单适配
+   ======================================== */
+
+/* 输入框 */
+.fixed-container-input {
+  width: 100% !important;
+  padding: 0.5rem !important;
+  font-size: 0.875rem !important;
+}
+
+/* 选择框 */
+.fixed-container-select {
+  width: 100% !important;
+  padding: 0.5rem !important;
+  font-size: 0.875rem !important;
+}
+
+/* ========================================
+   11. 滚动条优化
+   ======================================== */
+
+/* 自定义滚动条 */
+.fixed-container-scroll::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
+}
+
+.fixed-container-scroll::-webkit-scrollbar-track {
+  background: rgba(28, 25, 23, 0.5) !important;
+}
+
+.fixed-container-scroll::-webkit-scrollbar-thumb {
+  background: #57534e !important;
+  border-radius: 3px !important;
+}
+
+.fixed-container-scroll::-webkit-scrollbar-thumb:hover {
+  background: #78716c !important;
+}
+
+/* ========================================
+   12. 文字缩放
+   ======================================== */
+
+/* 全局字体缩放 - 确保所有文本适配 */
+.fixed-container-text-xs {
+  font-size: 0.625rem !important;
+  line-height: 1.4 !important;
+}
+
+.fixed-container-text-sm {
+  font-size: 0.75rem !important;
+  line-height: 1.5 !important;
+}
+
+.fixed-container-text-base {
+  font-size: 0.875rem !important;
+  line-height: 1.6 !important;
+}
+
+.fixed-container-text-lg {
+  font-size: 1rem !important;
+  line-height: 1.5 !important;
+}
+
+.fixed-container-text-xl {
+  font-size: 1.125rem !important;
+  line-height: 1.4 !important;
+}
+
+/* ========================================
+   13. 间距优化
+   ======================================== */
+
+/* 减小内边距 */
+.fixed-container-p-tight {
+  padding: 0.5rem !important;
+}
+
+/* 减小外边距 */
+.fixed-container-m-tight {
+  margin: 0.5rem !important;
+}
+
+/* 减小间隙 */
+.fixed-container-gap-tight {
+  gap: 0.5rem !important;
+}
+
+/* ========================================
+   14. 公告跑马灯适配
+   ======================================== */
+
+.fixed-container-announcement {
+  height: 28px !important;
+  font-size: 0.75rem !important;
+  padding: 0.25rem 0.5rem !important;
+}
+
+/* ========================================
+   15. 图片/图标适配
+   ======================================== */
+
+/* 头像 */
+.fixed-container-avatar {
+  width: 2rem !important;
+  height: 2rem !important;
+}
+
+.fixed-container-avatar-lg {
+  width: 3rem !important;
+  height: 3rem !important;
+}
+
+/* 图标 */
+.fixed-container-icon {
+  width: 1rem !important;
+  height: 1rem !important;
+}
+
+.fixed-container-icon-lg {
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+}
+
+/* ========================================
+   16. 状态栏适配
+   ======================================== */
+
+/* 进度条 */
+.fixed-container-progress {
+  height: 0.5rem !important;
+}
+
+.fixed-container-progress-lg {
+  height: 0.75rem !important;
+}
+
+/* 徽章 */
+.fixed-container-badge {
+  padding: 0.125rem 0.375rem !important;
+  font-size: 0.625rem !important;
+}
+
+/* ========================================
+   17. 特殊场景适配
+   ======================================== */
+
+/* 启动屏幕 */
+.fixed-container-start-screen {
+  width: 540px !important;
+  height: 960px !important;
+}
+
+/* 地图界面 */
+.fixed-container-map {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 540px !important;
+  max-height: 960px !important;
+}
+
+/* ========================================
+   18. 响应式禁用（保持固定尺寸）
+   ======================================== */
+
+/* 禁用所有媒体查询影响 */
+@media (min-width: 640px),
+       (min-width: 768px),
+       (min-width: 1024px),
+       (min-width: 1280px) {
+  /* 重置所有可能的响应式变化 */
+  .fixed-container-no-responsive * {
+    font-size: inherit !important;
+    padding: inherit !important;
+    margin: inherit !important;
+  }
+}

@@ -1,7 +1,8 @@
 # 仙侠卡牌RPG - 专业术语词汇表
 
 > 📅 生成日期: 2024-12-12
-> 🔖 版本: 1.0.0
+> 📅 更新日期: 2024-12-13
+> 🔖 版本: 1.1.0
 
 ---
 
@@ -54,6 +55,9 @@
 | 天宫 | Palace | 天界 | 诸天仙神的居所 |
 | 镇狱大牢 | Prison | 冥界 | 关押罪犯和俘虏的巨型监狱 |
 | 森罗殿 | Palace | 冥界 | 地府阎罗的议事大殿 |
+| 育灵轩 | Building | 人界 | 培育新生命的神秘场所 |
+| 礼仪设计馆 | Building | 人界 | 设计和传授礼仪规范的场所 |
+| 红尘录馆 | Building | 人界 | 悬赏任务发布和追踪的场所 |
 
 ### 1.4 界面划分 (Realm)
 
@@ -80,6 +84,11 @@
 | 培育系统 | Cultivation | `CultivationModal.tsx` | 融合两个生命体创造新生命 |
 | 医馆系统 | Hospital | `HospitalModal.tsx` | 诊治病人的系统 |
 | 悬赏系统 | Bounty | `BountyBoardModal.tsx` | 追捕悬赏目标的系统 |
+| 传音系统 | Telepathy | `TelepathyModal.tsx` | 与NPC进行心灵对话的系统 |
+| 公告系统 | Announcement | `AnnouncementModal.tsx` | 展示江湖传闻和世界事件的系统 |
+| 人物状态系统 | CharacterStatus | `CharacterStatusModal.tsx` | 查看所有角色当前状态和忙碌情况 |
+| 日结算系统 | DailySettlement | `App.tsx` | 每日产业收入和事件结算的系统 |
+| 忙碌角色管理 | BusyCharacterManagement | `App.tsx` | 追踪和管理正在执行任务的角色 |
 
 ### 2.2 战斗术语
 
@@ -110,12 +119,17 @@
 | 术语 | 英文标识 | 类型定义 | 描述 |
 |------|----------|----------|------|
 | 囚犯 | Prisoner | `Prisoner` | 被关押的角色 |
-| 监狱区域 | PrisonArea | `PrisonArea` | 普通牢房/重刑区/劳役区/审讯室 |
+| 监狱区域 | PrisonArea | `PrisonArea` | 居住区/审讯区/娱乐区/劳役区/管理区/医疗区 |
 | 屈服度 | SubmissionLevel | `Prisoner.submissionLevel` | 囚犯的服从程度 (0-100) |
+| 归顺度 | LoyaltyLevel | `Prisoner.loyaltyLevel` | 囚犯的忠诚程度 (0-100)，招募所需 |
 | 健康度 | Health | `Prisoner.health` | 囚犯的健康状态 (0-100) |
+| 神智 | Sanity | `Prisoner.sanity` | 囚犯的心理健康 (0-100) |
 | 劳役位 | LaborSite | `LaborSite` | 矿山/采药的劳役地点 |
+| 劳役工人 | LaborWorker | `LaborWorker` | 在劳役位工作的囚犯记录 |
 | 审讯 | Interrogation | `InterrogationModal` | 对囚犯进行审讯获取情报 |
-| 对话类型 | DialogueType | `DialogueType` | 威胁/诱惑/交易/闲聊 |
+| 对话类型 | DialogueType | `DialogueType` | 威胁/劝说/交易/套话/闲聊/恩惠/羞辱 |
+| 囚犯状态 | PrisonerStatus | `PrisonerStatus` | 健康/受伤/生病/虚弱/劳役中等 |
+| 牢房类型 | CellType | `CellType` | 普通牢房/重犯牢房/单独囚室 |
 
 ### 2.5 礼仪系统术语
 
@@ -170,8 +184,20 @@
 | 向量化服务 | 将文本转换为向量 | `services/vectorService.ts` |
 | 语义搜索 | 基于向量相似度的搜索 | `services/semanticSearchService.ts` |
 | 重排序服务 | 对搜索结果进行重排序 | `services/rerankerService.ts` |
+| AI消息捕获 | 自动捕获并保存AI生成的消息到记忆系统 | `services/aiMessageCapture.ts` |
 | Embedding API | 文本向量化的外部API | OpenAI/Ollama |
 | Reranker API | 结果重排序的外部API | Jina/Cohere |
+
+### 3.5 UI交互系统
+
+| 术语 | 描述 | 实现位置 |
+|------|------|----------|
+| 底部导航栏 | 游戏主要功能入口，分为一级和二级功能 | `components/BottomBar.tsx` |
+| 一级功能 | 始终可见的核心功能按钮（探索/队伍/背包/活动/更多） | `BottomBar.primaryActions` |
+| 二级功能 | 点击"更多"展开的扩展功能菜单 | `BottomBar.secondaryActions` |
+| 响应式布局 | 根据屏幕尺寸自动调整的界面布局 | `hooks/useResponsiveLayout.ts` |
+| 模态框 | 浮层弹窗，用于展示功能界面 | `components/ResponsiveModal.tsx` |
+| 顶部状态栏 | 显示玩家核心信息的顶部区域 | `components/TopStatusBar.tsx` |
 
 ---
 
@@ -198,8 +224,11 @@
 | `GenderLock` | Male/Female/Universal | 性别限制 |
 | `EquipmentType` | Weapon/Armor/Accessory | 装备类型 |
 | `MemoryCategory` | 探索/战斗/商城/医馆/悬赏/培育/商业/声望/公告/大牢/其他 | 记忆分类 |
-| `PrisonArea` | 普通牢房/重刑区/劳役区/审讯室 | 监狱区域 |
-| `DialogueType` | threaten/seduce/negotiate/chat | 对话类型 |
+| `PrisonArea` | 居住区/审讯区/娱乐区/劳役区/管理区/医疗区 | 监狱区域 |
+| `DialogueType` | 威胁/劝说/交易/套话/闲聊/恩惠/羞辱 | 对话类型 |
+| `LaborSiteType` | 矿山/采药 | 劳役地点类型 |
+| `PrisonerStatus` | 健康/受伤/生病/虚弱/劳役中/审讯中 | 囚犯状态 |
+| `CellType` | 普通牢房/重犯牢房/单独囚室 | 牢房类型 |
 
 ### 4.3 接口类型
 
@@ -291,6 +320,60 @@
 | API | Application Programming Interface | 应用程序接口 |
 | DB | Database | 数据库 |
 | UI | User Interface | 用户界面 |
+| NPC | Non-Player Character | 非玩家角色 |
+| PVP | Player vs Player | 玩家对战 |
+
+---
+
+## 6. 功能模块术语
+
+### 6.1 二级功能模块
+
+以下是通过"更多"菜单访问的二级功能模块术语：
+
+| 术语 | 英文标识 | 图标 | 描述 |
+|------|----------|------|------|
+| 传音 | Telepathy | `fa-om` | 与NPC进行心灵对话，获取信息或建立关系 |
+| 育灵轩 | Cultivation Pavilion | `fa-dna` | 选择两个生命体进行培育，创造新生命 |
+| 红尘录 | Bounty Board | `fa-book-skull` | 悬赏任务系统，追捕目标获取奖励 |
+| 礼仪设计馆 | Etiquette Hall | `fa-ribbon` | 设计和管理角色礼仪规范的场所 |
+| 江湖传闻 | Announcements | `fa-bullhorn` | 查看宗门、奇遇、世界三类公告 |
+| 人物状态 | Character Status | `fa-users-viewfinder` | 查看所有角色的当前状态和任务分配 |
+| 产业 | Business District | `fa-building` | 管理商业区、店铺和员工 |
+| 医馆 | Hospital | `fa-hospital` | 为病患诊断治疗，获取报酬和声望 |
+| 镇狱大牢 | Prison | `fa-dungeon` | 管理囚犯、审讯、劳役和招募 |
+
+### 6.2 角色状态标记
+
+| 术语 | 英文标识 | 描述 |
+|------|----------|------|
+| 忙碌角色 | BusyCharacter | 正在执行任务无法被分配的角色 |
+| 追踪中 | Tracking | 角色正在追踪悬赏目标 |
+| 培育中 | Breeding | 角色正在育灵轩进行培育 |
+| 工作中 | Working | 角色正在商业区店铺工作 |
+| 设计中 | Designing | 角色正在礼仪设计馆担任设计师 |
+| 空闲 | Idle | 角色可被分配新任务 |
+
+### 6.3 悬赏系统流程术语
+
+| 术语 | 英文标识 | 描述 |
+|------|----------|------|
+| 悬赏中 | Active | 悬赏任务可被接取 |
+| 追踪中 | Tracking | 已派遣角色追踪目标 |
+| 已完成 | Completed | 目标已被捕获，可领取结果 |
+| 已结束 | Finished | 悬赏已处理完毕（击杀或押入大牢） |
+| 追踪日志 | TrackingLog | AI生成的追捕过程描述 |
+
+### 6.4 培育系统流程术语
+
+| 术语 | 英文标识 | 描述 |
+|------|----------|------|
+| 空闲 | Empty | 培育仓可用 |
+| 培育中 | Breeding | 正在进行培育 |
+| 已完成 | Ready | 培育完成，可领取结果 |
+| 父母 | Parents | 参与培育的两个生命体 |
+| 灵胎 | Offspring | 培育产生的新生命 |
+| 监视日志 | MonitoringLog | 培育过程的实时状态记录 |
 
 ---
 

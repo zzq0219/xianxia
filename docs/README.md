@@ -1,7 +1,8 @@
 # 仙侠卡牌RPG - 私域知识库
 
 > 📅 创建日期: 2024-12-12
-> 🔖 版本: 1.1.0
+> 📅 更新日期: 2024-12-13
+> � 版本: 1.1.0
 > 📁 项目: xianxia-card-rpg
 
 ---
@@ -87,20 +88,128 @@
 
 ---
 
-### 6. [构建优化指南](./BUILD_OPTIMIZATION_GUIDE.md) 🆕
+## 🎮 功能模块层级关系
 
-**内容概要**:
-- 构建系统概述（单文件输出、资源内联）
-- 构建命令详解（dev/build/analyze/preview）
-- Vite 配置详解（核心配置、Terser 压缩、路径别名）
-- 优化策略（Tree Shaking、代码分割、资源优化）
-- 常见问题与解决方案
+### 模块入口层次结构
 
-**适用场景**: 构建优化、CI/CD 配置、性能调优
+游戏的功能模块通过 `BottomBar` 组件组织，分为两个层级：
+
+#### 一级功能（primaryActions）- 核心操作，始终可见
+
+| 功能 | 图标 | 说明 | 对应组件/模态框 |
+|------|------|------|----------------|
+| **探索** | `fa-map-location-dot` | 打开世界地图，进行区域切换 | `MapModal.Enhanced.tsx` |
+| **队伍** | `fa-users` | 管理玩家的男性/女性编队 | `Modal.tsx` → `PartyFormation.tsx` |
+| **背包** | `fa-briefcase` | 查看装备、材料、消耗品 | `Modal.tsx` → `Inventory.tsx` |
+| **活动** | `fa-trophy` | 进入竞技场进行PVP对战 | `Modal.tsx` → `Arena.tsx` |
+| **更多** | `fa-ellipsis-vertical` | 展开二级功能菜单 | 浮层菜单 |
+
+#### 二级功能（secondaryActions）- 收纳菜单，点击"更多"展开
+
+| 功能 | 图标 | 颜色标识 | 说明 | 对应组件 |
+|------|------|----------|------|----------|
+| **商城** | `fa-store` | 默认 | 购买卡牌、装备、材料 | `Modal.tsx` → `Shop.tsx` |
+| **任务** | `fa-scroll` | 默认 | 查看当前任务和进度 | `QuestLogModal.tsx` |
+| **记忆** | `fa-book-open` | 粉色 | 管理AI记忆和总结 | `MemoryModal.tsx` |
+| **传音** | `fa-om` | 青色 | 与NPC进行心灵对话 | `TelepathyModal.tsx` |
+| **育灵轩** | `fa-dna` | 紫色 | 角色培育系统 | `CultivationModal.tsx` |
+| **产业** | `fa-building` | 默认 | 管理商业区和店铺 | `BusinessModal.tsx` |
+| **医馆** | `fa-hospital` | 默认 | 为病患问诊治疗 | `HospitalModal.tsx` |
+| **红尘录** | `fa-book-skull` | 默认 | 悬赏任务追踪 | `BountyBoardModal.tsx` |
+| **镇狱大牢** | `fa-dungeon` | 红色 | 管理囚犯和审讯 | `PrisonModal.tsx` |
+| **礼仪设计馆** | `fa-ribbon` | 粉色 | 礼仪训练系统 | `EtiquetteHallModal.tsx` |
+| **江湖传闻** | `fa-bullhorn` | 默认 | 查看世界公告和消息 | `AnnouncementModal.tsx` |
+| **人物状态** | `fa-users-viewfinder` | 青色 | 查看所有角色当前状态 | `CharacterStatusModal.tsx` |
+| **系统** | `fa-bars` | 默认 | 存档/读档/导入导出 | `SaveLoadModal.tsx` |
+
+### 模块关系图
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                        BottomBar (底部导航栏)                      │
+├──────────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │                   一级功能 (始终可见)                         │ │
+│  │  [探索] [队伍] [背包] [活动] [更多]                           │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+│                              ↓ 点击"更多"                         │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │                   二级功能 (浮层菜单)                         │ │
+│  │  [商城] [任务] [记忆] [传音] [育灵轩]                         │ │
+│  │  [产业] [医馆] [红尘录] [镇狱大牢] [礼仪设计馆]                │ │
+│  │  [江湖传闻] [人物状态] [系统]                                 │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 功能分类树
+
+```
+游戏功能模块
+├── 🗺️ 探索系统
+│   ├── 世界地图 (MapModal.Enhanced)
+│   ├── 故事展示 (StoryDisplay)
+│   ├── 随机事件 (RandomEventModal)
+│   └── 挑战对决 (ChallengeModal)
+│
+├── ⚔️ 战斗系统
+│   ├── 战斗界面 (Battlefield)
+│   ├── 战斗行动 (BattleActionPanel)
+│   ├── 战斗结果 (BattleResultModal)
+│   └── 竞技场 (Arena)
+│
+├── 👥 角色管理
+│   ├── 队伍编排 (PartyFormation)
+│   ├── 角色详情 (CharacterDetail)
+│   ├── 宠物详情 (PetDetail)
+│   ├── 人物状态 (CharacterStatusModal)
+│   └── 育灵轩培育 (CultivationModal)
+│
+├── 💼 背包与装备
+│   ├── 物品栏 (Inventory)
+│   ├── 装备详情 (EquipmentDetail)
+│   └── 技能详情 (SkillDetail)
+│
+├── 🏪 商业系统
+│   ├── 商城 (Shop)
+│   ├── 产业管理 (BusinessModal)
+│   ├── 监控查看 (SurveillanceModal)
+│   └── 礼仪设计馆 (EtiquetteHallModal)
+│
+├── 🏥 医馆系统
+│   ├── 病患管理 (HospitalModal)
+│   ├── 问诊界面 (ConsultationScreen)
+│   └── 病历查看 (MedicalRecordModal)
+│
+├── 🎯 悬赏系统 (红尘录)
+│   ├── 悬赏榜 (BountyBoardModal)
+│   └── 悬赏结果 (BountyResultModal)
+│
+├── 🔒 大牢系统 (镇狱大牢)
+│   ├── 监狱管理 (PrisonModal)
+│   ├── 审讯系统 (InterrogationModal)
+│   └── 囚犯对话 (PrisonerDialogueModal)
+│
+├── 📜 任务与记录
+│   ├── 任务日志 (QuestLogModal)
+│   ├── 记忆系统 (MemoryModal)
+│   ├── 江湖传闻 (AnnouncementModal)
+│   └── 声望系统 (ReputationModal)
+│
+├── 💬 社交系统
+│   ├── 传音对话 (TelepathyModal)
+│   ├── 互动菜单 (InteractionModal)
+│   └── 人际关系 (RelationshipModal)
+│
+└── 💾 系统功能
+    ├── 存档读档 (SaveLoadModal)
+    ├── 向量设置 (VectorSettingsModal)
+    └── 语义搜索 (SemanticSearchPanel)
+```
 
 ---
 
-## 🗂️ 项目核心文件索引
+## ️ 项目核心文件索引
 
 ### 入口文件
 
@@ -143,7 +252,11 @@
 | 向量搜索 | [公式手册#向量](./BUSINESS_LOGIC_FORMULAS.md#7-向量搜索算法) | `vectorService.ts`, `semanticSearchService.ts` |
 | 监狱系统 | [数据模型#监狱](./DATA_MODEL_MANUAL.md#41-prisonsystem---监狱系统) | `PrisonModal.tsx`, `InterrogationModal.tsx` |
 | 礼仪系统 | [数据模型#礼仪](./DATA_MODEL_MANUAL.md#43-etiquettesystem---礼仪系统) | `EtiquetteHallModal.tsx`, `types/etiquette.ts` |
-| 构建配置 | [构建优化指南](./BUILD_OPTIMIZATION_GUIDE.md) | `vite.config.ts`, `package.json` |
+| 育灵轩 | [数据模型#培育](./DATA_MODEL_MANUAL.md#45-cultivationslot---育灵仓) | `CultivationModal.tsx` |
+| 悬赏系统 | [数据模型#悬赏](./DATA_MODEL_MANUAL.md#44-bountytarget---悬赏目标) | `BountyBoardModal.tsx`, `BountyResultModal.tsx` |
+| 医馆系统 | [数据模型#医馆](./DATA_MODEL_MANUAL.md#46-medicalrecord---病历) | `HospitalModal.tsx`, `MedicalRecordModal.tsx` |
+| 传音系统 | [术语#传音](./GLOSSARY.md#传音-telepathy) | `TelepathyModal.tsx` |
+| 角色管理 | [数据模型#角色](./DATA_MODEL_MANUAL.md#14-charactercard---角色卡牌) | `CharacterDetail.tsx`, `PartyFormation.tsx` |
 
 ### 按类型查找
 
@@ -164,7 +277,7 @@
 | 服务数量 | 28 |
 | 类型定义行数 | 1439 |
 | 主应用行数 | 3173 |
-| 文档数量 | 6 |
+| 文档数量 | 5 |
 
 ---
 
@@ -172,9 +285,11 @@
 
 ### v1.1.0 (2024-12-13)
 
-- ✅ 新增构建优化指南文档
-- ✅ 重构 Vite 构建配置 (vite.config.ts)
-- ✅ 优化 package.json 构建脚本
+- ✅ 新增功能模块层级关系文档
+- ✅ 补充二级功能入口说明（13个模块）
+- ✅ 添加功能分类树
+- ✅ 扩展快速查找表（新增5个功能条目）
+- ✅ 更新核心文件索引
 
 ### v1.0.0 (2024-12-12)
 

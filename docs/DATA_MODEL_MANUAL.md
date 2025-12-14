@@ -1,8 +1,8 @@
 # 仙侠卡牌RPG - 数据模型使用手册
 
 > 📅 生成日期: 2024-12-12
-> 🔖 版本: 1.0.0
-> 📁 类型定义文件: `types.ts` (1439行)
+> 🔖 版本: 1.1.0
+> 📁 类型定义文件: `types.ts` (1439行), `App.tsx`, `BottomBar.tsx`
 
 ---
 
@@ -14,6 +14,8 @@
 4. [子系统模型](#4-子系统模型)
 5. [配置与设置模型](#5-配置与设置模型)
 6. [模型关系图](#6-模型关系图)
+7. [UI组件模型](#7-ui组件模型)
+8. [AI系统模型](#8-ai系统模型)
 
 ---
 
@@ -434,39 +436,94 @@ interface PrisonSystem {
 }
 
 interface Prisoner {
-  id: string;
-  character: CharacterCard;
-  area: PrisonArea;
+  character: CharacterCard;         // 囚犯角色卡
+  crime: string;                    // 罪行描述
+  sentence: number;                 // 刑期（天）
+  remainingDays: number;            // 剩余刑期
   submissionLevel: number;          // 屈服度 (0-100)
+  loyaltyLevel: number;             // 归顺度 (0-100)
   health: number;                   // 健康度 (0-100)
-  status: string[];                 // 当前状态标签
-  knownInformation: string[];       // 已知情报
+  sanity: number;                   // 神智 (0-100)
+  location: PrisonArea;             // 当前所在区域
+  cellType: CellType;               // 牢房类型
+  value: {
+    ransom: number;                 // 赎金价值
+    labor: number;                  // 劳役价值
+    intelligence: number;           // 情报价值
+  };
+  status: PrisonerStatus[];         // 当前状态标签数组
   history: InterrogationRecord[];   // 审讯历史
+  knownInformation: string[];       // 已获取情报
+  potentialInformation: string[];   // 潜在可获取情报
+  imprisonedDate: string;           // 入狱日期（游戏时间）
+  realImprisonedTime: number;       // 入狱时间（真实时间戳）
 }
 
-type PrisonArea = '普通牢房' | '重刑区' | '劳役区' | '审讯室';
+type PrisonArea = '居住区' | '审讯区' | '娱乐区' | '劳役区' | '管理区' | '医疗区';
+type CellType = '普通牢房' | '重犯牢房' | '单独囚室';
+type PrisonerStatus = '健康' | '受伤' | '重伤' | '生病' | '精神失常' | '意志消沉' | '劳役中' | '审讯中';
 ```
+
+**业务规则**:
+- ✅ `submissionLevel` 达到60%且 `loyaltyLevel` 达到80%时可招募
+- ✅ `health` 降至0时囚犯死亡
+- ✅ `sanity` 降至0时囚犯精神失常
+- ⚠️ 劳役中的囚犯 `status` 包含 '劳役中' 标签
 
 ---
 
-### 4.2 LaborSite - 劳役位
+### 4.2 LaborSite - 劳役场地
 
 ```typescript
+/**
+ * 劳役场地
+ * 来源: App.tsx - prisonSystem.laborSites
+ */
 interface LaborSite {
-  id: string;
-  type: LaborSiteType;
-  name: string;
-  slots: [LaborSlot | null, LaborSlot | null];  // 2个劳役槽位
+  id: string;                       // 唯一标识
+  type: LaborSiteType;              // 场地类型
+  name: string;                     // 场地名称
+  description: string;              // 场地描述
+  maxWorkers: number;               // 最大工人数量
+  workers: LaborWorker[];           // 当前工人列表
 }
 
 type LaborSiteType = '矿山' | '采药';
 
-interface LaborSlot {
-  prisonerId: string;
-  startTime: number;
-  duration: number;                 // 小时
-  status: 'working' | 'completed';
+/**
+ * 劳役工人
+ * 来源: App.tsx - handleAssignLabor
+ */
+interface LaborWorker {
+  prisonerId: string;               // 囚犯ID
+  prisonerName: string;             // 囚犯名称（便于显示）
+  startTime: number;                // 开始时间戳
+  endTime: number;                  // 结束时间戳
+  duration: number;                 // 劳役时长（小时）
+  status: 'working' | 'completed';  // 劳役状态
 }
+```
+
+**劳役场地初始化示例**:
+```typescript
+const initialLaborSites: LaborSite[] = [
+  {
+    id: 'mine-01',
+    type: '矿山',
+    name: '青蛇矿脉',
+    description: '宗门后山的灵石矿脉',
+    maxWorkers: 2,
+    workers: []
+  },
+  {
+    id: 'herb-01',
+    type: '采药',
+    name: '灵药园',
+    description: '宗门的药材种植园',
+    maxWorkers: 2,
+    workers: []
+  }
+];
 ```
 
 ---
@@ -750,4 +807,260 @@ PP ||--o{ CC : "femaleParty"
 
 ---
 
+## 7. UI组件模型
+
+### 7.1 NavButton - 导航按钮
+
+```typescript
+/**
+ * 底部导航按钮配置
+ * 来源: BottomBar.tsx
+ */
+interface NavButton {
+  label: string;                    // 按钮标签文字
+  icon: string;                     // Font Awesome 图标类名
+  onClick: () => void;              // 点击事件处理函数
+  color?: string;                   // 可选的颜色类（如 'text-pink-400'）
+  badge?: number;                   // 可选的徽章数字（未读/待处理数量）
+}
+```
+
+**使用示例**:
+```typescript
+const primaryActions: NavButton[] = [
+  { label: '探索', icon: 'fa-solid fa-map-location-dot', onClick: onMapClick },
+  { label: '队伍', icon: 'fa-solid fa-users', onClick: () => onNavClick('队伍') },
+  { label: '背包', icon: 'fa-solid fa-briefcase', onClick: () => onNavClick('背包') },
+  { label: '活动', icon: 'fa-solid fa-trophy', onClick: () => onNavClick('竞技场'),
+    badge: gameState.playerProfile.quests.filter(q => q.status === 'In Progress').length },
+  { label: '更多', icon: 'fa-solid fa-ellipsis-vertical', onClick: () => setShowMoreMenu(!showMoreMenu) },
+];
+```
+
+---
+
+### 7.2 BottomBarProps - 底部栏属性
+
+```typescript
+/**
+ * BottomBar 组件属性接口
+ * 来源: BottomBar.tsx
+ */
+interface BottomBarProps {
+  gameState: GameState;                     // 完整游戏状态
+  isLoading: boolean;                       // 加载状态
+  error: string | null;                     // 错误信息
+  onExplorationAction: (action: string) => void;  // 探索行动处理
+  onNavClick: (modal: ModalType) => void;   // 模态框导航
+  onMapClick: () => void;                   // 打开地图
+  onInteractClick: () => void;              // 打开互动面板
+  onTelepathyClick: () => void;             // 打开传音面板
+  onSystemClick: () => void;                // 打开系统菜单
+  onQuestClick: () => void;                 // 打开任务日志
+  onBusinessClick: () => void;              // 打开产业面板
+  onNextDay: () => void;                    // 日结算
+  onHospitalClick: () => void;              // 打开医馆
+  onBountyBoardClick: () => void;           // 打开红尘录
+  onAnnouncementsClick: () => void;         // 打开江湖传闻
+  onCultivationClick: () => void;           // 打开育灵轩
+  onMemoryClick: () => void;                // 打开记忆面板
+  onCharacterStatusClick: () => void;       // 打开人物状态
+  onPrisonClick: () => void;                // 打开镇狱大牢
+  onEtiquetteHallClick: () => void;         // 打开礼仪设计馆
+}
+```
+
+---
+
+### 7.3 功能模块层级映射
+
+| 层级 | 功能名称 | 触发回调 | 图标 |
+|------|----------|----------|------|
+| **一级** | 探索 | `onMapClick` | `fa-map-location-dot` |
+| **一级** | 队伍 | `onNavClick('队伍')` | `fa-users` |
+| **一级** | 背包 | `onNavClick('背包')` | `fa-briefcase` |
+| **一级** | 活动 | `onNavClick('竞技场')` | `fa-trophy` |
+| **一级** | 更多 | `setShowMoreMenu` | `fa-ellipsis-vertical` |
+| **二级** | 商城 | `onNavClick('商城')` | `fa-store` |
+| **二级** | 任务 | `onQuestClick` | `fa-scroll` |
+| **二级** | 记忆 | `onMemoryClick` | `fa-book-open` |
+| **二级** | 传音 | `onTelepathyClick` | `fa-om` |
+| **二级** | 育灵轩 | `onCultivationClick` | `fa-dna` |
+| **二级** | 产业 | `onBusinessClick` | `fa-building` |
+| **二级** | 医馆 | `onHospitalClick` | `fa-hospital` |
+| **二级** | 红尘录 | `onBountyBoardClick` | `fa-book-skull` |
+| **二级** | 镇狱大牢 | `onPrisonClick` | `fa-dungeon` |
+| **二级** | 礼仪设计馆 | `onEtiquetteHallClick` | `fa-ribbon` |
+| **二级** | 江湖传闻 | `onAnnouncementsClick` | `fa-bullhorn` |
+| **二级** | 人物状态 | `onCharacterStatusClick` | `fa-users-viewfinder` |
+| **二级** | 系统 | `onSystemClick` | `fa-bars` |
+
+---
+
+## 8. AI系统模型
+
+### 8.1 AI消息捕获服务
+
+```typescript
+/**
+ * AI消息捕获服务接口
+ * 来源: services/aiMessageCapture.ts
+ *
+ * 用于自动捕获SillyTavern中AI生成的消息并保存到记忆系统
+ */
+interface AIMessageCaptureService {
+  // 设置消息接收回调
+  setMessageCallback: (
+    callback: (message: CapturedMessage, category: MemoryCategory) => void
+  ) => void;
+  
+  // 设置当前场景（用于自动分类）
+  setCurrentScene: (scene: SceneType) => void;
+  
+  // 注册SillyTavern事件监听器
+  registerEventListeners: () => void;
+  
+  // 手动捕获消息
+  captureMessage: (content: string, category?: MemoryCategory) => void;
+  
+  // 清理资源
+  cleanup: () => void;
+}
+
+interface CapturedMessage {
+  id: string;                       // 唯一ID
+  content: string;                  // 消息内容
+  timestamp: number;                // 捕获时间戳
+  scene: SceneType;                 // 捕获时的场景
+  source: 'ai' | 'system';          // 消息来源
+}
+
+type SceneType =
+  | 'exploration'    // 探索
+  | 'battle'         // 战斗
+  | 'consultation'   // 医馆问诊
+  | 'hospital'       // 医馆
+  | 'surveillance'   // 商业监控
+  | 'business'       // 商业
+  | 'bounty'         // 悬赏
+  | 'cultivation'    // 培育
+  | 'map'            // 地图
+  | 'interaction'    // 互动
+  | 'telepathy'      // 传音
+  | 'reputation'     // 声望
+  | 'announcement'   // 公告
+  | 'arena'          // 竞技场
+  | 'shop';          // 商城
+```
+
+**场景到记忆分类的映射**:
+```typescript
+const SCENE_TO_CATEGORY: Record<SceneType, MemoryCategory> = {
+  exploration: '探索',
+  battle: '战斗',
+  consultation: '医馆',
+  hospital: '医馆',
+  surveillance: '商业',
+  business: '商业',
+  bounty: '悬赏',
+  cultivation: '培育',
+  map: '探索',
+  interaction: '其他',
+  telepathy: '其他',
+  reputation: '声望',
+  announcement: '公告',
+  arena: '战斗',
+  shop: '商城'
+};
+```
+
+---
+
+### 8.2 AI消息捕获初始化流程
+
+```typescript
+/**
+ * App组件中的AI消息捕获初始化
+ * 来源: App.tsx - useEffect
+ */
+useEffect(() => {
+  // 设置消息接收回调，自动保存到记忆系统
+  aiMessageCapture.setMessageCallback((message, category) => {
+    const title = message.content.length > 30
+      ? message.content.substring(0, 30) + '...'
+      : message.content;
+    
+    addMemory(
+      category,
+      `AI生成: ${title}`,
+      message.content,
+      [] // 可从content中提取涉及的角色
+    );
+  });
+  
+  // 尝试注册SillyTavern事件监听器
+  try {
+    aiMessageCapture.registerEventListeners();
+  } catch (error) {
+    console.warn('AI消息捕获服务初始化失败（可能不在SillyTavern环境中）');
+  }
+  
+  // 清理函数
+  return () => {
+    aiMessageCapture.cleanup();
+  };
+}, []);
+```
+
+---
+
+### 8.3 场景切换同步
+
+```typescript
+/**
+ * 根据当前模态框状态更新AI捕获场景
+ * 来源: App.tsx - useEffect
+ */
+useEffect(() => {
+  if (consultationPatient) {
+    aiMessageCapture.setCurrentScene('consultation');
+  } else if (isHospitalModalOpen) {
+    aiMessageCapture.setCurrentScene('hospital');
+  } else if (surveillanceTarget) {
+    aiMessageCapture.setCurrentScene('surveillance');
+  } else if (isBusinessModalOpen) {
+    aiMessageCapture.setCurrentScene('business');
+  } else if (isBountyBoardOpen) {
+    aiMessageCapture.setCurrentScene('bounty');
+  } else if (isCultivationModalOpen) {
+    aiMessageCapture.setCurrentScene('cultivation');
+  } else if (isMapOpen) {
+    aiMessageCapture.setCurrentScene('map');
+  } else if (isInteractionModalOpen) {
+    aiMessageCapture.setCurrentScene('interaction');
+  } else if (isTelepathyModalOpen) {
+    aiMessageCapture.setCurrentScene('telepathy');
+  } else if (isReputationModalOpen) {
+    aiMessageCapture.setCurrentScene('reputation');
+  } else if (isAnnouncementModalOpen) {
+    aiMessageCapture.setCurrentScene('announcement');
+  } else if (activeModal === '竞技场') {
+    aiMessageCapture.setCurrentScene('arena');
+  } else if (activeModal === '商城') {
+    aiMessageCapture.setCurrentScene('shop');
+  } else if (gameState.mode === 'exploration') {
+    aiMessageCapture.setCurrentScene('exploration');
+  }
+}, [/* 所有相关模态框状态 */]);
+```
+
+---
+
 > 📝 **文档说明**: 本手册详细描述了仙侠卡牌RPG的所有数据模型，包括实体定义、字段说明、业务规则和模型关系。开发时请严格遵循这些模型定义以确保数据一致性。
+
+> 🔄 **版本 1.1.0 更新**:
+> - 完善 Prisoner 接口定义，添加归顺度、神智等字段
+> - 添加 PrisonerStatus 枚举完整定义
+> - 添加 LaborWorker 接口及劳役场地初始化示例
+> - 新增第7章：UI组件模型（NavButton、BottomBarProps、功能模块层级映射）
+> - 新增第8章：AI系统模型（消息捕获服务、场景类型、初始化流程、场景切换同步）

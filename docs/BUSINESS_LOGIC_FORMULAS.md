@@ -1,8 +1,8 @@
 # 仙侠卡牌RPG - 业务逻辑公式手册
 
 > 📅 生成日期: 2024-12-12
-> 🔖 版本: 1.0.0
-> 📁 核心逻辑文件: `tavernService.ts`, `constants.ts`
+> 🔖 版本: 1.1.0
+> 📁 核心逻辑文件: `App.tsx`, `tavernService.ts`, `constants.ts`
 
 ---
 
@@ -15,6 +15,9 @@
 5. [监狱系统公式](#5-监狱系统公式)
 6. [记忆系统规则](#6-记忆系统规则)
 7. [向量搜索算法](#7-向量搜索算法)
+8. [忙碌角色管理机制](#8-忙碌角色管理机制)
+9. [时间与进度计算公式](#9-时间与进度计算公式)
+10. [事件触发概率](#10-事件触发概率)
 
 ---
 
@@ -722,6 +725,312 @@ const estimateCost = (tokenCount: number): number => {
 
 ---
 
+## 8. 忙碌角色管理机制
+
+### 8.1 忙碌角色识别算法
+
+```typescript
+/**
+ * 计算所有忙碌角色及其任务详情
+ * 来源: App.tsx - busyCharacterDetails (useMemo)
+ *
+ * 忙碌场景包括:
+ * 1. 红尘录追踪任务
+ * 2. 育灵轩培育中
+ * 3. 商业区工作
+ * 4. 礼仪设计馆设计师
+ */
+const calculateBusyCharacters = (gameState: GameState): Map<string, string> => {
+  const details = new Map<string, string>();
+  
+  // 1. 正在追踪悬赏的角色
+  gameState.bountyBoard.forEach(bounty => {
+    if (bounty.status === '追踪中' && bounty.trackerId) {
+      details.set(bounty.trackerId, `红尘录: ${bounty.name}`);
+    }
+  });
+  
+  // 2. 正在培育的角色（作为父母）
+  gameState.cultivationPavilion.forEach(slot => {
+    if (slot.status === 'Breeding') {
+      if (slot.parentA) details.set(slot.parentA.id, '育灵轩: 培育中');
+      if (slot.parentB) details.set(slot.parentB.id, '育灵轩: 培育中');
+    }
+  });
+  
+  // 3. 在商区工作的角色
+  gameState.playerProfile.businessDistrict?.shops.forEach(shop => {
+    shop.staff.forEach(staff => {
+      const position = POSITIONS[staff.positionId]?.name || '工作';
+      details.set(staff.characterId, `${shop.type}: ${position}`);
+    });
+  });
+  
+  // 4. 礼仪设计馆的设计师
+  if (gameState.etiquetteSystem?.designer) {
+    details.set(
+      gameState.etiquetteSystem.designer.characterId,
+      '礼仪设计馆: 设计师'
+    );
+  }
+  
+  return details;
+};
+```
+
+### 8.2 忙碌角色过滤
+
+```typescript
+/**
+ * 从角色列表中过滤掉忙碌角色
+ * 用于派遣任务时的可用角色筛选
+ */
+const getAvailableCharacters = (
+  cardCollection: CharacterCard[],
+  busyCharacterIds: Set<string>
+): CharacterCard[] => {
+  return cardCollection.filter(card => !busyCharacterIds.has(card.id));
+};
+```
+
+### 8.3 忙碌状态优先级
+
+| 优先级 | 任务类型 | 解锁条件 |
+|--------|----------|----------|
+| 1 | 礼仪设计馆 | 需手动解除 |
+| 2 | 育灵轩培育 | 培育完成后自动解除 |
+| 3 | 商业区工作 | 需手动解除 |
+| 4 | 红尘录追踪 | 追踪完成后自动解除 |
+
+---
+
+## 9. 时间与进度计算公式
+
+### 9.1 悬赏追踪时间计算
+
+```typescript
+/**
+ * 根据悬赏目标稀有度计算追踪时间
+ * 来源: App.tsx - handleAcceptBounty
+ */
+const BOUNTY_TRACKING_TIME: Record<Rarity, number> = {
+  '凡品': 0.5 * 60 * 60 * 1000,   // 30分钟
+  '良品': 1 * 60 * 60 * 1000,     // 1小时
+  '优品': 2 * 60 * 60 * 1000,     // 2小时
+  '珍品': 4 * 60 * 60 * 1000,     // 4小时
+  '绝品': 8 * 60 * 60 * 1000,     // 8小时
+  '仙品': 12 * 60 * 60 * 1000,    // 12小时
+  '圣品': 24 * 60 * 60 * 1000,    // 24小时
+  '神品': 48 * 60 * 60 * 1000     // 48小时
+};
+
+const calculateBountyTrackingTime = (targetRarity: Rarity): {
+  startTime: number;
+  endTime: number;
+} => {
+  const trackingTime = BOUNTY_TRACKING_TIME[targetRarity];
+  const startTime = Date.now();
+  const endTime = startTime + trackingTime;
+  return { startTime, endTime };
+};
+```
+
+### 9.2 育灵轩培育时间计算
+
+```typescript
+/**
+ * 根据父母稀有度计算培育时间
+ * 来源: App.tsx - handleStartCultivation
+ *
+ * 公式: 培育时间 = (父方时间 + 母方时间) / 2
+ */
+const CULTIVATION_TIME: Record<Rarity, number> = {
+  '凡品': 1 * 60 * 60 * 1000,     // 1小时
+  '良品': 2 * 60 * 60 * 1000,     // 2小时
+  '优品': 4 * 60 * 60 * 1000,     // 4小时
+  '珍品': 8 * 60 * 60 * 1000,     // 8小时
+  '绝品': 12 * 60 * 60 * 1000,    // 12小时
+  '仙品': 18 * 60 * 60 * 1000,    // 18小时
+  '圣品': 24 * 60 * 60 * 1000,    // 24小时
+  '神品': 48 * 60 * 60 * 1000     // 48小时
+};
+
+const calculateCultivationTime = (
+  parentA: CharacterCard | PetCard,
+  parentB: CharacterCard | PetCard
+): { startTime: number; endTime: number } => {
+  const timeA = CULTIVATION_TIME[parentA.rarity];
+  const timeB = CULTIVATION_TIME[parentB.rarity];
+  const cultivationTime = (timeA + timeB) / 2;
+  
+  const startTime = Date.now();
+  const endTime = startTime + cultivationTime;
+  
+  return { startTime, endTime };
+};
+```
+
+### 9.3 育灵仓状态自动更新
+
+```typescript
+/**
+ * 育灵仓状态检查（每秒执行）
+ * 来源: App.tsx - useEffect (checkCultivationStatus)
+ *
+ * 状态流转: Empty → Breeding → Ready → Empty
+ */
+const checkCultivationStatus = (
+  cultivationPavilion: CultivationSlot[]
+): CultivationSlot[] => {
+  const now = Date.now();
+  
+  return cultivationPavilion.map(slot => {
+    // 检查培育中的仓位是否已完成
+    if (slot.status === 'Breeding' && slot.endTime > 0 && now >= slot.endTime) {
+      return {
+        ...slot,
+        status: 'Ready',
+        monitoringLog: [
+          { timestamp: '培育完成', message: '灵胎已成熟，可以开启查看结果。' },
+          ...slot.monitoringLog
+        ]
+      };
+    }
+    return slot;
+  });
+};
+```
+
+### 9.4 进度百分比计算
+
+```typescript
+/**
+ * 通用进度百分比计算
+ * 适用于: 悬赏追踪、育灵培育、劳役任务
+ */
+const calculateProgressPercentage = (
+  startTime: number,
+  endTime: number
+): number => {
+  const now = Date.now();
+  
+  if (now >= endTime) return 100;
+  if (now <= startTime) return 0;
+  
+  const totalDuration = endTime - startTime;
+  const elapsed = now - startTime;
+  
+  return Math.min(100, Math.floor((elapsed / totalDuration) * 100));
+};
+```
+
+### 9.5 日历时间计算
+
+```typescript
+/**
+ * 游戏内时间推进
+ * 来源: App.tsx - handleNextDay
+ */
+const advanceGameDay = (currentTime: string): string => {
+  const dayMatch = currentTime.match(/第(\d+)天/);
+  const currentDay = dayMatch ? parseInt(dayMatch[1], 10) : 1;
+  return `第${currentDay + 1}天，清晨`;
+};
+```
+
+---
+
+## 10. 事件触发概率
+
+### 10.1 探索随机事件
+
+```typescript
+/**
+ * 探索中随机事件触发
+ * 来源: App.tsx - handleExplorationAction
+ */
+const EXPLORATION_EVENT_PROBABILITY = 0.25;  // 25% 触发概率
+
+const shouldTriggerRandomEvent = (): boolean => {
+  return Math.random() < EXPLORATION_EVENT_PROBABILITY;
+};
+```
+
+### 10.2 悬赏目标遭遇
+
+```typescript
+/**
+ * 在探索中遭遇悬赏目标
+ * 来源: App.tsx - handleExplorationAction
+ *
+ * 条件: 当前位置与悬赏目标位置线索匹配
+ */
+const BOUNTY_ENCOUNTER_PROBABILITY = 0.25;  // 25% 遭遇概率
+
+const shouldEncounterBountyTarget = (
+  currentLocation: string,
+  bountyLocationHint: string
+): boolean => {
+  const locationMatches = bountyLocationHint.includes(currentLocation);
+  return locationMatches && Math.random() < BOUNTY_ENCOUNTER_PROBABILITY;
+};
+```
+
+### 10.3 商业事件触发
+
+```typescript
+/**
+ * 日结算时的商业事件触发
+ * 来源: App.tsx - handleNextDay
+ */
+const BUSINESS_EVENT_PROBABILITY = 0.3;  // 30% 触发概率
+
+const shouldTriggerBusinessEvent = (): boolean => {
+  return Math.random() < BUSINESS_EVENT_PROBABILITY;
+};
+```
+
+### 10.4 新悬赏生成
+
+```typescript
+/**
+ * 日结算时新悬赏目标生成
+ * 来源: App.tsx - handleNextDay
+ */
+const NEW_BOUNTY_PROBABILITY = 0.5;  // 50% 生成概率
+
+const shouldGenerateNewBounty = (): boolean => {
+  return Math.random() < NEW_BOUNTY_PROBABILITY;
+};
+```
+
+### 10.5 任务生成频率控制
+
+```typescript
+/**
+ * 探索中任务生成的频率控制
+ * 来源: App.tsx - handleExplorationAction
+ *
+ * 双重限制: 冷却时间 + 随机概率
+ */
+const QUEST_GENERATION_CONFIG = {
+  cooldownTime: 5 * 60 * 1000,     // 5分钟冷却
+  probability: 0.2                  // 20% 概率
+};
+
+const shouldGenerateQuest = (
+  lastQuestGenerationTime: number
+): boolean => {
+  const now = Date.now();
+  const cooldownPassed = (now - lastQuestGenerationTime) >= QUEST_GENERATION_CONFIG.cooldownTime;
+  const probabilityCheck = Math.random() < QUEST_GENERATION_CONFIG.probability;
+  
+  return cooldownPassed && probabilityCheck;
+};
+```
+
+---
+
 ## 附录：公式速查表
 
 ### 战斗公式
@@ -756,6 +1065,39 @@ const estimateCost = (tokenCount: number): number => {
 | 余弦相似度 | `(A·B) / (||A|| × ||B||)` |
 | Token估算 | `ceil(中文字数/1.5 + 其他字数/4)` |
 
+### 时间计算
+
+| 公式名称 | 公式 |
+|----------|------|
+| 悬赏追踪时间 | `BOUNTY_TRACKING_TIME[目标稀有度]` |
+| 培育时间 | `(父方时间 + 母方时间) / 2` |
+| 进度百分比 | `min(100, floor((当前时间 - 开始时间) / (结束时间 - 开始时间) × 100))` |
+
+### 事件触发概率
+
+| 事件类型 | 触发概率 | 额外条件 |
+|----------|----------|----------|
+| 探索随机事件 | 25% | 无 |
+| 悬赏目标遭遇 | 25% | 位置匹配 |
+| 商业事件 | 30% | 日结算时 |
+| 新悬赏生成 | 50% | 日结算时 |
+| 任务生成 | 20% | 5分钟冷却 |
+
+### 忙碌角色来源
+
+| 来源系统 | 忙碌标记 | 解锁方式 |
+|----------|----------|----------|
+| 红尘录 | `红尘录: {悬赏名}` | 追踪完成/领取 |
+| 育灵轩 | `育灵轩: 培育中` | 培育完成/领取 |
+| 商业区 | `{店铺类型}: {职位}` | 手动解除 |
+| 礼仪馆 | `礼仪设计馆: 设计师` | 手动解除 |
+
 ---
 
 > 📝 **文档说明**: 本手册详细记录了仙侠卡牌RPG中所有核心业务逻辑的计算公式和算法。开发和调试时请参考此文档以确保逻辑一致性。
+
+> 🔄 **版本 1.1.0 更新**:
+> - 新增第8章：忙碌角色管理机制
+> - 新增第9章：时间与进度计算公式
+> - 新增第10章：事件触发概率
+> - 更新附录：添加时间计算、事件触发、忙碌角色速查表

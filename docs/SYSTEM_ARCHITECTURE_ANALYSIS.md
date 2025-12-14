@@ -1,7 +1,8 @@
 # 仙侠卡牌RPG - 系统架构分析文档
 
 > 📅 生成日期: 2024-12-12
-> 🔖 版本: 1.0.0
+> 📅 更新日期: 2024-12-13
+> 🔖 版本: 1.1.0
 > 📁 项目路径: xianxia-card-rpg
 
 ---
@@ -14,6 +15,7 @@
 4. [核心模块分析](#4-核心模块分析)
 5. [数据流分析](#5-数据流分析)
 6. [关键设计模式](#6-关键设计模式)
+7. [核心业务流程时序图](#7-核心业务流程时序图)
 
 ---
 
@@ -663,4 +665,576 @@ const closeModal = () => setActiveModal(null);
 
 ---
 
-> 📝 **文档说明**: 本文档为系统架构分析的第一部分，包含项目概述、技术栈、架构图和核心模块分析。后续文档将包含专业术语词汇表、数据模型手册、业务逻辑公式手册和开发实践指南。
+## 7. 核心业务流程时序图
+
+### 7.1 日结算流程 (handleNextDay)
+
+日结算是游戏中的核心定期事件，处理产业收入和随机事件。
+
+```plantuml
+@startuml
+!theme plain
+skinparam backgroundColor #FEFEFE
+
+actor 玩家
+participant "App.tsx" as App
+participant "tavernService" as TS
+participant "GameState" as GS
+
+玩家 -> App: 点击"下一天"按钮
+App -> App: handleNextDay()
+
+group 产业收入计算
+    App -> App: calculateBusinessIncome(playerProfile)
+    App -> App: 计算商业区每个店铺收入
+    note right: 收入 = Σ(店铺等级 × 员工魅力)
+end
+
+group 随机商业事件 (30%概率)
+    App -> TS: generateBusinessEvent(businessDistrict, cardCollection)
+    TS -> TS: 调用AI生成商业事件
+    TS --> App: {message, incomeChange}
+    App -> App: totalIncome = income + incomeChange
+end
+
+group 时间更新
+    App -> GS: 更新exploration.time = "第N+1天，清晨"
+    App -> GS: 更新spiritStones += totalIncome
+    App -> GS: 添加日志到businessDistrict.log
+end
+
+group 悬赏刷新 (50%概率)
+    App -> TS: generateBountyTarget()
+    TS --> App: 新悬赏目标
+    App -> GS: 添加到bountyBoard
+end
+
+App -> App: 记录商业记忆到memories['商业']
+App --> 玩家: 显示结算结果
+
+@enduml
+```
+
+### 7.2 悬赏追踪流程
+
+悬赏系统的完整生命周期：接取 → 追踪 → 领取 → 处置。
+
+```plantuml
+@startuml
+!theme plain
+skinparam backgroundColor #FEFEFE
+
+actor 玩家
+participant "BountyBoardModal" as BBM
+participant "App.tsx" as App
+participant "CharacterSelectionModal" as CSM
+participant "tavernService" as TS
+participant "BountyResultModal" as BRM
+
+== 阶段1：接取悬赏 ==
+
+玩家 -> BBM: 点击"接取"按钮
+BBM -> App: onAccept(bountyId)
+App -> CSM: 打开角色选择器
+note right: 过滤掉busyCharacterIds中的角色
+CSM --> 玩家: 显示可用角色列表
+玩家 -> CSM: 选择追踪角色
+CSM -> App: handleAcceptBounty(bountyId, characterId)
+
+group 计算追踪时间
+    App -> App: trackingTime = rarityTimeMap[rarity]
+    note right
+        凡品: 30分钟
+        良品: 1小时
+        优品: 2小时
+        珍品: 4小时
+        ...
+        神品: 48小时
+    end note
+end
+
+App -> App: bounty.status = '追踪中'
+App -> App: bounty.trackerId = characterId
+App -> App: bounty.startTime / endTime = now / now + trackingTime
+
+== 阶段2：追踪进行中 ==
+
+note over App: 时间流逝 (Date.now() >= endTime)
+
+== 阶段3：领取结果 ==
+
+玩家 -> BBM: 点击"领取"按钮
+BBM -> App: handleClaimBounty(bountyId)
+App -> TS: generateBountyLog(tracker, target, gameState)
+note right: AI生成追捕日志
+TS --> App: trackingLog (追捕故事文本)
+App -> App: bounty.trackingLog = log
+App -> BRM: 打开结果模态框
+
+BRM --> 玩家: 显示追捕日志
+玩家 -> BRM: 选择处置方式
+
+alt 选择"击杀"
+    BRM -> App: handleBountyOutcome(bountyId, 'killed')
+    App -> App: spiritStones += reward × 10
+    App -> App: reputation += 5
+    App -> App: bounty.status = '已结束'
+else 选择"押入大牢"
+    BRM -> App: handleBountyOutcome(bountyId, 'imprisoned')
+    App -> App: spiritStones += reward × 10
+    App -> App: reputation += 20
+    App -> App: 创建新Prisoner对象
+    App -> App: 添加到prisonSystem.prisoners
+    App -> App: bounty.status = '已结束'
+end
+
+App -> App: 记录到memories['大牢'或'悬赏']
+
+@enduml
+```
+
+### 7.3 育灵轩培育流程
+
+生命培育系统的完整流程。
+
+```plantuml
+@startuml
+!theme plain
+skinparam backgroundColor #FEFEFE
+
+actor 玩家
+participant "CultivationModal" as CM
+participant "App.tsx" as App
+participant "tavernService" as TS
+participant "GameState" as GS
+
+== 阶段1：开始培育 ==
+
+玩家 -> CM: 选择培育仓位 (slotId)
+CM -> CM: 选择父母A (parentAId)
+CM -> CM: 选择父母B (parentBId)
+note right: 过滤掉busyCharacterIds
+
+CM -> App: handleStartCultivation(slotId, parentAId, parentBId)
+
+group 计算培育时间
+    App -> App: timeA = rarityTimeMap[parentA.rarity]
+    App -> App: timeB = rarityTimeMap[parentB.rarity]
+    App -> App: cultivationTime = (timeA + timeB) / 2
+    note right
+        凡品: 1小时
+        良品: 2小时
+        优品: 4小时
+        ...
+        神品: 48小时
+    end note
+end
+
+App -> GS: 更新cultivationPavilion[slotId]
+note right
+    status = 'Breeding'
+    startTime = Date.now()
+    endTime = startTime + cultivationTime
+    parentA, parentB = 选中的卡牌
+end note
+
+== 阶段2：培育进行中 ==
+
+loop 每秒检查 (useEffect interval)
+    App -> App: checkCultivationStatus()
+    alt Date.now() >= slot.endTime
+        App -> GS: slot.status = 'Ready'
+        App -> GS: 添加"培育完成"日志
+    end
+end
+
+== 阶段3：领取结果 ==
+
+玩家 -> CM: 点击"开启灵胎"
+CM -> App: handleClaimCultivation(slotId)
+App -> TS: generateCultivationResult(parentA, parentB)
+note right: AI生成后代卡牌
+TS --> App: newCard (CharacterCard 或 PetCard)
+
+alt 是CharacterCard
+    App -> GS: cardCollection.push(newCard)
+else 是PetCard
+    App -> GS: petCollection.push(newCard)
+end
+
+App -> GS: 重置slot为Empty状态
+App -> App: 记录培育记忆
+App --> 玩家: alert("恭喜获得新卡牌: ${newCard.name}")
+
+@enduml
+```
+
+### 7.4 囚犯劳役流程
+
+监狱劳役系统的完整流程。
+
+```plantuml
+@startuml
+!theme plain
+skinparam backgroundColor #FEFEFE
+
+actor 玩家
+participant "PrisonModal" as PM
+participant "App.tsx" as App
+participant "tavernService" as TS
+participant "GameState" as GS
+
+== 阶段1：分配劳役 ==
+
+玩家 -> PM: 选择囚犯和劳役地点
+PM -> App: handleAssignLabor(prisonerId, siteId, duration)
+
+group 验证检查
+    App -> App: 查找prisoner和site
+    alt site.workers.length >= site.maxWorkers
+        App --> 玩家: 提示"工位已满"
+    else prisoner.status包含'劳役中'
+        App --> 玩家: 提示"囚犯已在劳役中"
+    end
+end
+
+App -> GS: 创建LaborWorker记录
+note right
+    prisonerId, prisonerName
+    startTime = Date.now()
+    endTime = startTime + duration × 3600000
+    status = 'working'
+end note
+
+App -> GS: 添加worker到site.workers
+App -> GS: prisoner.status添加'劳役中'
+App -> GS: prisoner.location = '劳役区'
+App -> App: 记录劳役分配到memories['大牢']
+
+== 阶段2：劳役进行中 ==
+
+note over App: 时间流逝 (Date.now() >= worker.endTime)
+
+== 阶段3：领取劳役结果 ==
+
+玩家 -> PM: 点击"领取结果"
+PM -> App: handleClaimLaborResult(siteId, workerId)
+
+group 验证
+    alt Date.now() < worker.endTime
+        App --> 玩家: 提示"劳役尚未完成"
+    end
+end
+
+App -> TS: generateLaborResult(prisoner, site.type, duration, gameState)
+note right
+    AI生成劳役结果：
+    - 获得材料列表
+    - 故事描述
+    - 经验值
+    - 健康消耗
+end note
+TS --> App: {materials, story, experience, healthCost}
+
+App -> GS: 移除worker从site.workers
+App -> GS: 添加materials到materialInventory
+App -> GS: prisoner.health -= healthCost
+App -> GS: prisoner.status移除'劳役中'
+App -> GS: prisoner.location = '居住区'
+
+App -> App: 记录劳役完成到memories['大牢']
+App --> 玩家: alert显示劳役结果
+
+@enduml
+```
+
+### 7.5 忙碌角色管理机制
+
+展示如何追踪和管理忙碌角色。
+
+```plantuml
+@startuml
+!theme plain
+skinparam backgroundColor #FEFEFE
+
+participant "App.tsx" as App
+participant "useMemo Hook" as Memo
+participant "各功能模态框" as Modals
+
+== 计算忙碌角色 (busyCharacterDetails) ==
+
+App -> Memo: 计算busyCharacterDetails Map
+note right
+    依赖项:
+    - gameState.bountyBoard
+    - gameState.cultivationPavilion
+    - gameState.playerProfile.businessDistrict
+    - gameState.etiquetteSystem
+end note
+
+group 遍历bountyBoard
+    loop 每个悬赏
+        alt bounty.status === '追踪中'
+            Memo -> Memo: details.set(trackerId, "红尘录: ${bounty.name}")
+        end
+    end
+end
+
+group 遍历cultivationPavilion
+    loop 每个培育槽
+        alt slot.status === 'Breeding'
+            Memo -> Memo: details.set(parentA.id, "育灵轩: 培育中")
+            Memo -> Memo: details.set(parentB.id, "育灵轩: 培育中")
+        end
+    end
+end
+
+group 遍历businessDistrict.shops
+    loop 每个店铺的staff
+        Memo -> Memo: details.set(staffId, "${shop.type}: ${position}")
+    end
+end
+
+group 检查etiquetteSystem
+    alt designer存在
+        Memo -> Memo: details.set(designer.characterId, "礼仪设计馆: 设计师")
+    end
+end
+
+Memo --> App: busyCharacterDetails: Map<string, string>
+App -> App: busyCharacterIds = new Set(busyCharacterDetails.keys())
+
+== 使用忙碌角色列表 ==
+
+App -> Modals: 传递busyCharacterIds
+
+Modals -> Modals: 过滤可选角色列表
+note right
+    availableCharacters = cardCollection.filter(
+        c => !busyCharacterIds.has(c.id)
+    )
+end note
+
+Modals --> App: 用户只能选择空闲角色
+
+@enduml
+```
+
+### 7.6 医馆问诊流程
+
+医馆问诊的完整交互流程。
+
+```plantuml
+@startuml
+!theme plain
+skinparam backgroundColor #FEFEFE
+
+actor 玩家
+participant "HospitalModal" as HM
+participant "App.tsx" as App
+participant "tavernService" as TS
+participant "GameState" as GS
+
+== 开始问诊 ==
+
+玩家 -> HM: 选择病患，点击"开始问诊"
+HM -> App: handleStartConsultation(patientId)
+App -> App: 查找patient记录
+
+alt 有保存的问诊进度
+    App -> App: 恢复consultationStory和choices
+else 首次问诊
+    App -> App: 初始化问诊故事
+    note right
+        "你坐在问诊室内，面前的病人是..."
+    end note
+    App -> App: 初始化默认选项
+    note right
+        ['询问病症详情', '进行身体检查',
+         '安抚病患情绪', '开具诊疗方案']
+    end note
+    App -> GS: patient.status = '治疗中'
+end
+
+App -> App: setConsultationPatient(patient)
+HM --> 玩家: 显示问诊界面
+
+== 问诊交互 ==
+
+loop 直到结束问诊
+    玩家 -> HM: 选择问诊选项
+    HM -> App: handleConsultationAction(action)
+    App -> TS: generateExplorationStep(context, action, profile, gameState)
+    note right: 使用AI生成问诊对话
+    TS --> App: {story, choices}
+    App -> App: 更新consultationStory
+    App -> GS: 保存问诊进度到patient记录
+    HM --> 玩家: 显示新对话和选项
+end
+
+== 结束问诊 ==
+
+玩家 -> HM: 点击"结束问诊"
+HM -> App: handleEndConsultation()
+App -> App: 记录问诊到memories['医馆']
+App -> GS: patient.status = '已治愈'
+App -> GS: 清除问诊进度
+App -> App: 清空consultation状态
+HM --> 玩家: 返回病患列表
+
+@enduml
+```
+
+### 7.7 AI消息捕获流程
+
+AI消息捕获服务的工作流程。
+
+```plantuml
+@startuml
+!theme plain
+skinparam backgroundColor #FEFEFE
+
+participant "App.tsx" as App
+participant "aiMessageCapture" as AMC
+participant "SillyTavern Events" as ST
+participant "MemorySystem" as MS
+
+== 初始化 ==
+
+App -> AMC: 设置messageCallback
+note right
+    回调函数:
+    (message, category) => {
+        addMemory(category, title, content)
+    }
+end note
+
+App -> AMC: registerEventListeners()
+AMC -> ST: 监听AI消息事件
+
+== 场景切换 ==
+
+App -> AMC: setCurrentScene('exploration')
+note right
+    场景类型:
+    - exploration (探索)
+    - battle (战斗)
+    - consultation (问诊)
+    - hospital (医馆)
+    - cultivation (培育)
+    - bounty (悬赏)
+    等...
+end note
+
+== 捕获消息 ==
+
+ST -> AMC: AI生成新消息
+AMC -> AMC: captureMessage(content, scene)
+
+group 确定记忆分类
+    AMC -> AMC: 根据currentScene映射到MemoryCategory
+    note right
+        exploration -> '探索'
+        battle -> '战斗'
+        consultation -> '医馆'
+        等...
+    end note
+end
+
+AMC -> App: 调用messageCallback(message, category)
+App -> MS: addMemory(category, title, content)
+
+== 清理 ==
+
+App -> AMC: cleanup()
+AMC -> ST: 移除事件监听器
+
+@enduml
+```
+
+### 7.8 BottomBar功能导航流程
+
+底部导航栏的两级菜单交互流程。
+
+```plantuml
+@startuml
+!theme plain
+skinparam backgroundColor #FEFEFE
+
+actor 玩家
+participant "BottomBar" as BB
+participant "App.tsx" as App
+participant "各功能模态框" as Modals
+
+== 一级功能 (始终可见) ==
+
+group primaryActions
+    玩家 -> BB: 点击"探索"
+    BB -> App: onMapClick()
+    App -> App: setIsMapOpen(true)
+    App --> 玩家: 显示MapModal
+    
+    玩家 -> BB: 点击"队伍"
+    BB -> App: onNavClick('队伍')
+    App -> App: setActiveModal('队伍')
+    App --> 玩家: 显示PartyFormation
+    
+    玩家 -> BB: 点击"背包"
+    BB -> App: onNavClick('背包')
+    App -> App: setActiveModal('背包')
+    App --> 玩家: 显示Inventory
+    
+    玩家 -> BB: 点击"活动"
+    BB -> App: onNavClick('竞技场')
+    App -> App: setActiveModal('竞技场')
+    App --> 玩家: 显示Arena
+end
+
+== 二级功能 (更多菜单) ==
+
+玩家 -> BB: 点击"更多"
+BB -> BB: setShowMoreMenu(true)
+BB --> 玩家: 显示更多菜单浮层
+
+group secondaryActions (共13个)
+    玩家 -> BB: 选择功能按钮
+    
+    alt 商城
+        BB -> App: onNavClick('商城')
+    else 任务
+        BB -> App: onQuestClick()
+    else 记忆
+        BB -> App: onMemoryClick()
+    else 传音
+        BB -> App: onTelepathyClick()
+    else 育灵轩
+        BB -> App: onCultivationClick()
+    else 产业
+        BB -> App: onBusinessClick()
+    else 医馆
+        BB -> App: onHospitalClick()
+    else 红尘录
+        BB -> App: onBountyBoardClick()
+    else 镇狱大牢
+        BB -> App: onPrisonClick()
+    else 礼仪设计馆
+        BB -> App: onEtiquetteHallClick()
+    else 江湖传闻
+        BB -> App: onAnnouncementsClick()
+    else 人物状态
+        BB -> App: onCharacterStatusClick()
+    else 系统
+        BB -> App: onSystemClick()
+    end
+    
+    BB -> BB: setShowMoreMenu(false)
+    App -> Modals: 打开对应模态框
+    Modals --> 玩家: 显示功能界面
+end
+
+@enduml
+```
+
+---
+
+> 📝 **文档说明**: 本文档为系统架构分析文档，包含项目概述、技术栈、架构图、核心模块分析和业务流程时序图。建议结合术语词汇表、数据模型手册、业务逻辑公式手册和开发实践指南一起阅读。
