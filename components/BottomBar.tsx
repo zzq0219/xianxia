@@ -25,6 +25,7 @@ interface BottomBarProps {
     onCharacterStatusClick: () => void;
     onPrisonClick: () => void;
     onEtiquetteHallClick: () => void;
+    onGauntletClick: () => void;
 }
 
 interface NavButton {
@@ -53,7 +54,7 @@ const NavIconButton: React.FC<NavButton & { isCompact: boolean }> = ({ label, ic
 );
 
 export const BottomBar: React.FC<BottomBarProps> = (props) => {
-    const { gameState, isLoading, error, onExplorationAction, onNavClick, onMapClick, onInteractClick, onTelepathyClick, onSystemClick, onQuestClick, onBusinessClick, onNextDay, onHospitalClick, onBountyBoardClick, onAnnouncementsClick, onCultivationClick, onMemoryClick, onCharacterStatusClick, onPrisonClick, onEtiquetteHallClick } = props;
+    const { gameState, isLoading, error, onExplorationAction, onNavClick, onMapClick, onInteractClick, onTelepathyClick, onSystemClick, onQuestClick, onBusinessClick, onNextDay, onHospitalClick, onBountyBoardClick, onAnnouncementsClick, onCultivationClick, onMemoryClick, onCharacterStatusClick, onPrisonClick, onEtiquetteHallClick, onGauntletClick } = props;
     const [customInput, setCustomInput] = useState('');
     const [showMoreMenu, setShowMoreMenu] = useState(false);
     const layout = useResponsiveLayout();
@@ -79,6 +80,7 @@ export const BottomBar: React.FC<BottomBarProps> = (props) => {
     const secondaryActions: NavButton[] = [
         { label: '商城', icon: 'fa-solid fa-store', onClick: () => onNavClick('商城') },
         { label: '任务', icon: 'fa-solid fa-scroll', onClick: onQuestClick },
+        { label: '大闯关', icon: 'fa-solid fa-crown', onClick: onGauntletClick, color: 'text-amber-400' },
         { label: '记忆', icon: 'fa-solid fa-book-open', onClick: onMemoryClick, color: 'text-pink-400' },
         { label: '传音', icon: 'fa-solid fa-om', onClick: onTelepathyClick, color: 'text-cyan-400' },
         { label: '育灵轩', icon: 'fa-solid fa-dna', onClick: onCultivationClick, color: 'text-purple-400' },

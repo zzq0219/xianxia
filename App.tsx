@@ -22,7 +22,12 @@ import ChallengeModal from './components/ChallengeModal';
 import CharacterDetail from './components/CharacterDetail';
 import CombatLog from './components/CombatLog';
 import { CultivationModal } from './components/CultivationModal';
+import { GauntletAnnouncementModal } from './components/gauntlet/GauntletAnnouncementModal';
+import { GauntletHallModal } from './components/gauntlet/GauntletHallModal';
+import { GauntletLiveModal } from './components/gauntlet/GauntletLiveModal';
+import { GauntletRegistrationModal } from './components/gauntlet/GauntletRegistrationModal';
 import HospitalModal from './components/HospitalModal';
+// 大闯关服务
 import InteractionModal from './components/InteractionModal';
 import InterrogationModal from './components/InterrogationModal';
 import MapModalEnhanced from './components/MapModal.Enhanced';
@@ -43,6 +48,15 @@ import TelepathyModal from './components/TelepathyModal';
 import TopStatusBar from './components/TopStatusBar';
 import { useIframeHeightSync } from './hooks/useIframeHeightSync';
 import { aiMessageCapture } from './services/aiMessageCapture';
+import {
+    cancelPlayerRegistration,
+    checkAndAdvanceEventStatus,
+    createNewEvent,
+    registerPlayerContestant,
+    setChallengeDrafts,
+    updateChallenge
+} from './services/gauntlet';
+import { gauntletAIService } from './services/gauntlet/gauntletAIService';
 import * as questService from './services/questService';
 import { rerankerService } from './services/rerankerService';
 import { storageService } from './services/storageService';
@@ -243,6 +257,10 @@ const App: React.FC = () => {
     const [selectedPrisonerForInterrogation, setSelectedPrisonerForInterrogation] = useState<Prisoner | null>(null);
     const [interrogationLog, setInterrogationLog] = useState<string>('');
     const [isEtiquetteHallOpen, setIsEtiquetteHallOpen] = useState<boolean>(false);
+    const [isGauntletHallOpen, setIsGauntletHallOpen] = useState<boolean>(false);
+    const [isGauntletAnnouncementOpen, setIsGauntletAnnouncementOpen] = useState<boolean>(false);
+    const [isGauntletRegistrationOpen, setIsGauntletRegistrationOpen] = useState<boolean>(false);
+    const [isGauntletLiveOpen, setIsGauntletLiveOpen] = useState<boolean>(false);
     const [characterSelection, setCharacterSelection] = useState<{
         isOpen: boolean;
         title: string;
@@ -2597,6 +2615,7 @@ const App: React.FC = () => {
                     onCharacterStatusClick={() => setIsCharacterStatusModalOpen(true)}
                     onPrisonClick={() => setIsPrisonModalOpen(true)}
                     onEtiquetteHallClick={() => setIsEtiquetteHallOpen(true)}
+                    onGauntletClick={() => setIsGauntletHallOpen(true)}
                 />
             )}
 
@@ -3123,6 +3142,350 @@ const App: React.FC = () => {
                             setCharacterSelection(prev => ({ ...prev, isOpen: false }));
                         },
                     });
+                }}
+            />
+
+            {/* 大闯关大厅 */}
+            <GauntletHallModal
+                isOpen={isGauntletHallOpen}
+                onClose={() => setIsGauntletHallOpen(false)}
+                gameState={gameState}
+                setGameState={setGameState}
+                onOpenAnnouncement={() => {
+                    setIsGauntletAnnouncementOpen(true);
+                }}
+                onOpenRegistration={() => {
+                    setIsGauntletRegistrationOpen(true);
+                }}
+                onOpenLive={() => {
+                    setIsGauntletLiveOpen(true);
+                }}
+            />
+
+            {/* 大闯关直播间 */}
+            <GauntletLiveModal
+                isOpen={isGauntletLiveOpen}
+                onClose={() => setIsGauntletLiveOpen(false)}
+                gameState={gameState}
+                setGameState={setGameState}
+            />
+
+            {/* 大闯关公告栏 */}
+            <GauntletAnnouncementModal
+                isOpen={isGauntletAnnouncementOpen}
+                onClose={() => setIsGauntletAnnouncementOpen(false)}
+                gameState={gameState}
+                onGenerateAllDrafts={async () => {
+                    console.log('[大闯关] 生成全部草稿');
+
+                    const currentEvent = gameState.gauntletSystem.currentEvent;
+                    if (!currentEvent) {
+                        alert('当前没有进行中的赛事');
+                        return;
+                    }
+
+                    if (currentEvent.challengesGenerated) {
+                        alert('关卡草稿已生成，无需重复生成');
+                        return;
+                    }
+
+                    try {
+                        alert('开始生成6轮关卡草稿，请稍候...');
+
+                        // 调用AI服务生成关卡草稿
+                        const challenges = await gauntletAIService.generateAllChallengeDrafts(gameState);
+
+                        // 使用setChallengeDrafts更新赛事
+                        const updatedEvent = setChallengeDrafts(currentEvent, challenges);
+
+                        // 更新游戏状态
+                        setGameState(prev => ({
+                            ...prev,
+                            gauntletSystem: {
+                                ...prev.gauntletSystem,
+                                currentEvent: updatedEvent
+                            }
+                        }));
+
+                        console.log('[大闯关] 关卡草稿生成完成');
+                        alert(`关卡草稿生成成功！\n\n已生成${challenges.length}轮关卡`);
+                    } catch (error) {
+                        console.error('[大闯关] 生成关卡草稿失败:', error);
+                        alert('生成关卡草稿失败，请重试');
+                    }
+                }}
+                onStartAllOptimization={async () => {
+                    console.log('[大闯关] 开始全部优化');
+
+                    const currentEvent = gameState.gauntletSystem.currentEvent;
+                    if (!currentEvent) {
+                        alert('当前没有进行中的赛事');
+                        return;
+                    }
+
+                    if (!currentEvent.challengesGenerated) {
+                        alert('请先生成关卡草稿');
+                        return;
+                    }
+
+                    if (currentEvent.allOptimizationsComplete) {
+                        alert('所有关卡已完成优化');
+                        return;
+                    }
+
+                    try {
+                        alert('开始优化所有关卡（共18次优化），这可能需要一些时间...');
+
+                        let updatedEvent = { ...currentEvent };
+                        const totalOptimizations = 6 * 3; // 6轮 × 3次优化
+                        let completedOptimizations = 0;
+
+                        // 逐个优化每轮关卡
+                        for (let round = 1; round <= 6; round++) {
+                            const challenge = updatedEvent.rounds[round - 1]?.challenge;
+                            if (!challenge) continue;
+
+                            let updatedChallenge = { ...challenge };
+
+                            for (let optRound = 1; optRound <= 3; optRound++) {
+                                // 跳过已完成的优化
+                                if (updatedChallenge.optimizationProgress >= optRound) {
+                                    completedOptimizations++;
+                                    continue;
+                                }
+
+                                console.log(`[大闯关] 优化第${round}轮关卡 (${optRound}/3)`);
+
+                                const optimization = await gauntletAIService.optimizeChallenge(
+                                    updatedChallenge,
+                                    optRound as 1 | 2 | 3,
+                                    gameState
+                                );
+
+                                // 更新关卡
+                                updatedChallenge = {
+                                    ...updatedChallenge,
+                                    [`optimization${optRound}`]: optimization,
+                                    optimizationProgress: optRound as 0 | 1 | 2 | 3
+                                };
+
+                                // 如果是最后一轮优化,设置最终版本
+                                if (optRound === 3) {
+                                    updatedChallenge.finalVersion = optimization.optimizedDesign;
+                                }
+
+                                completedOptimizations++;
+
+                                // 添加小延迟避免API限流
+                                await new Promise(resolve => setTimeout(resolve, 300));
+                            }
+
+                            updatedEvent = updateChallenge(updatedEvent, round, updatedChallenge);
+                        }
+
+                        // 更新游戏状态
+                        setGameState(prev => ({
+                            ...prev,
+                            gauntletSystem: {
+                                ...prev.gauntletSystem,
+                                currentEvent: updatedEvent
+                            }
+                        }));
+
+                        console.log('[大闯关] 全部优化完成');
+                        alert('所有关卡优化完成！');
+                    } catch (error) {
+                        console.error('[大闯关] 优化失败:', error);
+                        alert('优化过程中出错，请重试');
+                    }
+                }}
+                onOptimizeChallenge={async (roundNumber, optimizationRound) => {
+                    console.log(`[大闯关] 优化第${roundNumber}轮关卡，第${optimizationRound}次优化`);
+
+                    const currentEvent = gameState.gauntletSystem.currentEvent;
+                    if (!currentEvent) {
+                        alert('当前没有进行中的赛事');
+                        return;
+                    }
+
+                    const challenge = currentEvent.rounds[roundNumber - 1]?.challenge;
+                    if (!challenge) {
+                        alert(`第${roundNumber}轮关卡不存在`);
+                        return;
+                    }
+
+                    if (challenge.optimizationProgress >= optimizationRound) {
+                        alert(`第${roundNumber}轮关卡的第${optimizationRound}次优化已完成`);
+                        return;
+                    }
+
+                    try {
+                        alert(`正在优化第${roundNumber}轮关卡（第${optimizationRound}次）...`);
+
+                        const optimization = await gauntletAIService.optimizeChallenge(
+                            challenge,
+                            optimizationRound as 1 | 2 | 3,
+                            gameState
+                        );
+
+                        // 更新关卡
+                        let updatedChallenge = {
+                            ...challenge,
+                            [`optimization${optimizationRound}`]: optimization,
+                            optimizationProgress: optimizationRound as 0 | 1 | 2 | 3
+                        };
+
+                        // 如果是最后一轮优化,设置最终版本
+                        if (optimizationRound === 3) {
+                            updatedChallenge.finalVersion = optimization.optimizedDesign;
+                        }
+
+                        const updatedEvent = updateChallenge(currentEvent, roundNumber, updatedChallenge);
+
+                        // 更新游戏状态
+                        setGameState(prev => ({
+                            ...prev,
+                            gauntletSystem: {
+                                ...prev.gauntletSystem,
+                                currentEvent: updatedEvent
+                            }
+                        }));
+
+                        console.log(`[大闯关] 第${roundNumber}轮关卡第${optimizationRound}次优化完成`);
+                        alert(`优化完成！\n\n第${roundNumber}轮关卡已完成第${optimizationRound}次优化`);
+                    } catch (error) {
+                        console.error('[大闯关] 优化失败:', error);
+                        alert('优化失败，请重试');
+                    }
+                }}
+            />
+
+            {/* 大闯关报名弹窗 */}
+            <GauntletRegistrationModal
+                isOpen={isGauntletRegistrationOpen}
+                onClose={() => setIsGauntletRegistrationOpen(false)}
+                gameState={gameState}
+                onRegister={async (characterCard: CharacterCard) => {
+                    console.log('[大闯关] 报名参赛者:', characterCard.name);
+
+                    // 获取当前赛事，如果不存在则创建新赛事
+                    let currentEvent = gameState.gauntletSystem.currentEvent;
+                    let updatedSystem = gameState.gauntletSystem;
+
+                    if (!currentEvent) {
+                        // 创建新赛事
+                        currentEvent = createNewEvent(gameState.gauntletSystem);
+                        updatedSystem = {
+                            ...gameState.gauntletSystem,
+                            currentEvent,
+                            totalEditions: currentEvent.edition
+                        };
+                    }
+
+                    // 检查并推进赛事状态（可能从countdown到registration）
+                    currentEvent = checkAndAdvanceEventStatus(currentEvent);
+
+                    // 检查是否在报名阶段
+                    if (currentEvent.status !== 'registration') {
+                        alert(`当前不在报名阶段\n\n赛事状态: ${currentEvent.status}`);
+                        return;
+                    }
+
+                    // 注册玩家参赛者
+                    const updatedEvent = registerPlayerContestant(currentEvent, {
+                        name: characterCard.name,
+                        realm: characterCard.realm,
+                        appearance: characterCard.appearance,
+                        charm: characterCard.charm,
+                        skillfulness: characterCard.skillfulness,
+                        characterCardId: characterCard.id
+                    });
+
+                    // 更新游戏状态
+                    setGameState(prev => ({
+                        ...prev,
+                        gauntletSystem: {
+                            ...updatedSystem,
+                            currentEvent: updatedEvent
+                        }
+                    }));
+
+                    console.log('[大闯关] 报名成功:', characterCard.name);
+                    alert(`报名成功！\n\n参赛者: ${characterCard.name}\n当前已报名人数: ${updatedEvent.contestants.length}/64`);
+                }}
+                onCancelRegistration={async () => {
+                    console.log('[大闯关] 取消报名');
+
+                    const currentEvent = gameState.gauntletSystem.currentEvent;
+                    if (!currentEvent) {
+                        alert('当前没有进行中的赛事');
+                        return;
+                    }
+
+                    if (currentEvent.status !== 'registration') {
+                        alert('当前不在报名阶段，无法取消报名');
+                        return;
+                    }
+
+                    if (!currentEvent.playerContestantId) {
+                        alert('您尚未报名');
+                        return;
+                    }
+
+                    // 取消报名
+                    const updatedEvent = cancelPlayerRegistration(currentEvent);
+
+                    // 更新游戏状态
+                    setGameState(prev => ({
+                        ...prev,
+                        gauntletSystem: {
+                            ...prev.gauntletSystem,
+                            currentEvent: updatedEvent
+                        }
+                    }));
+
+                    console.log('[大闯关] 取消报名成功');
+                    alert('已成功取消报名');
+                }}
+                onGenerateContestants={async (count: number) => {
+                    const currentEvent = gameState.gauntletSystem.currentEvent;
+                    if (!currentEvent) {
+                        console.error('[大闯关] 当前没有活跃赛事');
+                        alert('当前没有进行中的赛事');
+                        return;
+                    }
+
+                    try {
+                        setIsLoading(true);
+
+                        // 1. 调用AI服务生成参赛者
+                        console.log(`[大闯关] 开始生成${count}名AI参赛者...`);
+                        const newContestants = await gauntletAIService.generateContestants(count, gameState);
+                        console.log(`[大闯关] 成功生成${newContestants.length}名参赛者`);
+
+                        // 2. 将参赛者添加到当前赛事
+                        const updatedEvent = {
+                            ...currentEvent,
+                            contestants: [...currentEvent.contestants, ...newContestants]
+                        };
+
+                        // 3. 更新游戏状态
+                        setGameState(prevState => ({
+                            ...prevState,
+                            gauntletSystem: {
+                                ...prevState.gauntletSystem,
+                                currentEvent: updatedEvent
+                            }
+                        }));
+
+                        console.log(`[大闯关] 参赛者已添加到赛事，当前人数：${updatedEvent.contestants.length}`);
+                        alert(`成功生成${newContestants.length}名参赛者！\n\n当前报名人数：${updatedEvent.contestants.length}/64`);
+                    } catch (error) {
+                        console.error('[大闯关] 生成参赛者失败:', error);
+                        alert('生成参赛者失败，请稍后重试。');
+                    } finally {
+                        setIsLoading(false);
+                    }
                 }}
             />
 
