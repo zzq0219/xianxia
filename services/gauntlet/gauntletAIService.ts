@@ -1,7 +1,8 @@
 /**
  * 大闯关系统 - AI生成服务
- * 
+ *
  * 负责所有AI内容生成,包括参赛者、评委、关卡、表现、评分、解说、弹幕等
+ * 集成AIFormat服务确保响应格式的稳定性和可靠性
  */
 
 import { GameState } from '../../types';
@@ -18,7 +19,14 @@ import {
   JudgeScore,
   PerformanceGenerationContext
 } from '../../types/gauntlet.types';
+import { AIFormatProcessor } from '../aiFormatProcessor';
 import { enhancedGenerate } from '../enhancedAIGenerator';
+import {
+  ChallengeDraftSchema,
+  ChallengeOptimizationSchema,
+  ContestantsArraySchema,
+  JudgesArraySchema
+} from './gauntletAISchemas';
 import {
   generateChallengeId,
   generateContestantId,
@@ -47,6 +55,14 @@ export class GauntletAIService {
   ): Promise<GauntletContestant[]> {
     console.log(`[大闯关AI] 开始生成${count}名参赛者...`);
     
+    // 创建格式处理器
+    const processor = new AIFormatProcessor(
+      ContestantsArraySchema,
+      [],
+      `【重要】必须严格按照JSON数组格式输出，不要添加任何解释文字。
+输出格式: [{"name":"角色名","realm":"境界","appearance":"外观描述","specialTrait":"特殊特点","charm":数值,"skillfulness":数值}]`
+    );
+    
     const systemInstruction = `你是一个创意丰富的角色设计师。请生成${count}名风格各异的女性修仙者,她们将参加"大闯关"综艺比赛。
 
 要求:
@@ -56,30 +72,22 @@ export class GauntletAIService {
 4. 魅力值和技巧值要有差异,不要都很高
 5. 名字要符合修仙世界的风格
 
-返回格式必须是JSON数组,每个对象包含以下字段:
-{
-  "name": "角色名",
-  "realm": "境界",
-  "appearance": "外观描述(50字以内)",
-  "specialTrait": "特殊特点(30字以内)",
-  "charm": 魅力值(0-100),
-  "skillfulness": 技巧值(0-100)
-}`;
+${processor.getFormatInstruction()}`;
 
-    const prompt = `生成${count}名参赛者,要求风格多样,有强有弱,有美有丑,性格各异。直接返回JSON数组,不要有其他文字。`;
+    const prompt = `生成${count}名参赛者,要求风格多样,有强有弱,有美有丑,性格各异。`;
 
     try {
-      const result = await enhancedGenerate({
-        systemInstruction,
-        prompt,
-        gameState,
-        includeVectorMemories: false,
-        includePreset: true,
-        includeWorldbook: true
-      });
-
-      // 解析JSON
-      const parsedData = JSON.parse(result);
+      // 使用带重试的处理
+      const parsedData = await processor.processWithRetry(async () => {
+        return await enhancedGenerate({
+          systemInstruction,
+          prompt,
+          gameState,
+          includeVectorMemories: false,
+          includePreset: true,
+          includeWorldbook: true
+        });
+      }, 3);
       
       // 转换为GauntletContestant格式
       const contestants: GauntletContestant[] = parsedData.map((data: any) => ({
@@ -122,6 +130,14 @@ export class GauntletAIService {
   ): Promise<GauntletJudge[]> {
     console.log(`[大闯关AI] 开始生成${count}名评委...`);
     
+    // 创建格式处理器
+    const processor = new AIFormatProcessor(
+      JudgesArraySchema,
+      [],
+      `【重要】必须严格按照JSON数组格式输出，不要添加任何解释文字。
+输出格式: [{"name":"评委名","title":"称号","realm":"境界","personality":"性格","judgingStyle":"评判风格","specialty":"专长"}]`
+    );
+    
     const systemInstruction = `你是一个角色设计师。请生成${count}名资深的评委,他们将担任"大闯关"比赛的裁判。
 
 要求:
@@ -131,29 +147,22 @@ export class GauntletAIService {
 4. 称号要霸气
 5. 性格要鲜明
 
-返回格式必须是JSON数组,每个对象包含:
-{
-  "name": "评委名",
-  "title": "称号",
-  "realm": "境界",
-  "personality": "性格特点",
-  "judgingStyle": "评判风格",
-  "specialty": "专长领域"
-}`;
+${processor.getFormatInstruction()}`;
 
-    const prompt = `生成${count}名评委,要求风格各异,评判标准不同。直接返回JSON数组。`;
+    const prompt = `生成${count}名评委,要求风格各异,评判标准不同。`;
 
     try {
-      const result = await enhancedGenerate({
-        systemInstruction,
-        prompt,
-        gameState,
-        includeVectorMemories: false,
-        includePreset: true,
-        includeWorldbook: true
-      });
-
-      const parsedData = JSON.parse(result);
+      // 使用带重试的处理
+      const parsedData = await processor.processWithRetry(async () => {
+        return await enhancedGenerate({
+          systemInstruction,
+          prompt,
+          gameState,
+          includeVectorMemories: false,
+          includePreset: true,
+          includeWorldbook: true
+        });
+      }, 3);
       
       const judges: GauntletJudge[] = parsedData.map((data: any) => ({
         id: generateJudgeId(),
@@ -195,59 +204,175 @@ export class GauntletAIService {
     const difficultyMap = [3, 4, 5, 6, 7, 8]; // 1-6轮对应的难度
     const difficulty = difficultyMap[roundNumber - 1];
     
-    const systemInstruction = `你是一个综艺节目关卡设计师。请为"大闯关"第${roundNumber}轮设计一个精彩的关卡。
+    // 创建格式处理器 - 提供默认值确保rules字段有足够元素
+    const processor = new AIFormatProcessor(
+      ChallengeDraftSchema,
+      {
+        type: '综合',
+        name: '未命名关卡',
+        description: '待生成',
+        rules: ['规则1：待生成', '规则2：待生成'],
+        winCondition: '待生成',
+        eliminationCriteria: '待生成',
+        estimatedDuration: '30-60分钟'
+      },
+      `【重要】必须严格按照JSON格式输出，不要添加任何解释文字。
+输出格式: {"type":"类型","name":"关卡名","description":"描述","rules":["规则1","规则2","规则3"],"winCondition":"胜利条件","eliminationCriteria":"淘汰标准","estimatedDuration":"预估时长"}`
+    );
+    
+    const systemInstruction = `你是一个"色情大闯关"综艺节目的关卡设计大师。请为第${roundNumber}轮设计一个极具创意和色情元素的关卡。
 
 本轮信息:
 - 轮次: 第${roundNumber}轮
-- 参赛人数: ${context.contestantCount}人
+- 参赛人数: ${context.contestantCount}人(主要是女性参赛者)
 - 难度等级: ${difficulty}/10
 - 淘汰人数: ${Math.floor(context.contestantCount / 2)}人
 
 ${context.previousChallenges.length > 0 ? `已有关卡类型: ${context.previousChallenges.map(c => c.type).join('、')}` : ''}
 
-要求:
-1. 关卡要有创意,符合修仙世界背景
-2. 类型从以下选择: 解谜、竞技、体能、技巧、智力、综合
-3. 规则要清晰明确
-4. 获胜条件和淘汰标准要合理
-5. 预估时长要现实(30-60分钟)
+【重要禁止事项】
+❌ 不要编造虚拟的、空洞的、科幻的术语(如"双向阀值平衡系统"、"灵犀值"、"量子感应"等)
+❌ 不要造无意义的专有名词或设定
+✅ 使用简单直白的日常语言描述玩法
+✅ 使用现实中存在的概念和机制
 
-返回JSON格式:
+【创意设计理念 - 广泛汲取灵感】
+
+设计灵感可以来自任何领域,以下只是部分参考方向,请自由发挥创意:
+
+**1. 综艺节目灵感(仅供参考,不必局限):**
+- 真人秀类: 撕名牌、任务挑战、躲猫猫
+- 益智类: 解谜、答题、推理
+- 闯关类: 障碍赛、淘汰赛
+
+**2. 传统游戏与民间活动:**
+- 童年游戏: 跳房子、丢手绢、老鹰捉小鸡、木头人
+- 棋牌类: 真人版大富翁、真人象棋、飞行棋
+- 民俗活动: 投壶、蹴鞠、拔河、踩高跷
+
+**3. 体育竞技与极限运动:**
+- 田径类: 赛跑、跨栏、接力、跳远
+- 水上类: 游泳、跳水、水球
+- 极限类: 攀岩、蹦极、平衡挑战
+- 球类变体: 躲避球、保龄球
+
+**4. 修仙世界特有元素:**
+- 御剑/飞行比赛、法术对决
+- 阵法破解、丹药辨识
+- 灵气感应、意念控制
+- 仙兽驯服、符箓绘制
+
+**5. 生存与求生类:**
+- 荒野求生、资源争夺
+- 饥饿游戏式生存
+- 迷宫逃脱、密室破解
+
+**6. 社交与心理类:**
+- 狼人杀/卧底类推理
+- 信任挑战、背叛博弈
+- 谎言识别、心理战术
+
+**7. 创意与艺术类:**
+- 即兴表演、模仿秀
+- 才艺展示、舞蹈对决
+- 手工制作、绘画比赛
+
+**8. 随机与运气类:**
+- 抽签决定命运、骰子博弈
+- 盲盒惊喜、轮盘赌
+- 随机事件触发
+
+【基础玩法机制 - 可自由组合】
+竞速、平衡、记忆、反应、协作、对抗、策略、运气、表演、生存、解谜、社交...
+你可以融合多种机制,创造全新的玩法!
+
+【色情元素融合原则】
+将成人内容自然融入玩法核心,不是简单叠加:
+- 身体接触、暴露挑战、性刺激考验、羞耻play
+- 失败惩罚: 性惩罚、公开羞辱、服务NPC等
+- 要有代入感和刺激性,保持游戏性
+
+设计示例(展示融合思路,请创造新玩法):
+
+【肉棒攀岩墙】体能+色情: 把手是肉棒,需用手/嘴让其勃起才能抓稳
+
+【真人飞行棋】策略+运气+色情: 掷骰子在巨型棋盘移动,落在特殊格子要接受色情惩罚
+
+【灵气感应】修仙+色情: 蒙眼用身体感应灵气方向,身体越敏感越准确
+
+【狼人杀羞耻版】社交+推理: 被投票出局者要当众接受羞辱惩罚
+
+【水中寻宝】体能+运气: 在水池底寻找宝物,但水中有触手怪随机袭击
+
+设计要求:
+1. 类型多样化: 解谜/竞速/策略/技巧/体能/社交/生存/综合等
+2. 灵感来源不限: 可从任何领域获取创意
+3. 用简单直白的语言,不造虚拟术语
+4. 色情元素自然融入玩法核心
+5. 规则清晰,有明确成功/失败判定
+6. 符合修仙世界背景
+
+【必须严格遵守的JSON输出格式】
+你必须返回一个JSON对象,包含以下字段:
 {
-  "type": "关卡类型",
-  "name": "关卡名称",
-  "description": "详细描述(200字左右)",
-  "rules": ["规则1", "规则2", "规则3"],
-  "winCondition": "获胜条件",
-  "eliminationCriteria": "淘汰标准",
-  "estimatedDuration": "预估时长"
-}`;
+  "type": "关卡类型(字符串)",
+  "name": "关卡名称(字符串)",
+  "description": "关卡详细描述(字符串,100-200字)",
+  "rules": ["规则1(字符串)", "规则2(字符串)", "规则3(字符串)"],
+  "winCondition": "胜利条件(字符串)",
+  "eliminationCriteria": "淘汰标准(字符串)",
+  "estimatedDuration": "预估时长(字符串)"
+}
 
-    const prompt = `设计第${roundNumber}轮关卡,要求独特有趣,难度适中。直接返回JSON。`;
+【特别注意】rules字段必须是一个字符串数组,包含至少3条具体规则,例如:
+"rules": [
+  "每位参赛者需要在3分钟内完成挑战",
+  "失败一次扣10分,失败三次直接淘汰",
+  "可以使用道具但每人限用一次"
+]
+
+不要把rules写成字符串,必须是数组格式!`;
+
+    const prompt = `设计第${roundNumber}轮关卡。
+
+【重要格式要求】
+必须返回JSON对象,其中rules字段必须是字符串数组(至少3条规则),不是字符串!
+
+正确格式: "rules": ["规则1", "规则2", "规则3"]
+错误格式: "rules": "规则1,规则2,规则3"
+
+设计要求:
+1. 基于真实综艺或游戏的玩法机制
+2. 不要造虚拟术语,用简单直白的语言
+3. 色情元素自然融入玩法
+4. rules必须是数组,包含至少3条规则
+
+直接返回JSON,不要其他文字。`;
 
     try {
-      const result = await enhancedGenerate({
-        systemInstruction,
-        prompt,
-        gameState,
-        includeVectorMemories: false,
-        includePreset: true,
-        includeWorldbook: true
-      });
-
-      const data = JSON.parse(result);
+      // 使用带重试的处理
+      const data = await processor.processWithRetry(async () => {
+        return await enhancedGenerate({
+          systemInstruction,
+          prompt,
+          gameState,
+          includeVectorMemories: false,
+          includePreset: true,
+          includeWorldbook: true
+        });
+      }, 3);
       
       const challenge: ChallengeDesign = {
         id: generateChallengeId(roundNumber),
         roundNumber,
-        type: data.type,
-        name: data.name,
-        description: data.description,
-        rules: data.rules,
-        winCondition: data.winCondition,
-        eliminationCriteria: data.eliminationCriteria,
+        type: (data as any).type,
+        name: (data as any).name,
+        description: (data as any).description,
+        rules: (data as any).rules,
+        winCondition: (data as any).winCondition,
+        eliminationCriteria: (data as any).eliminationCriteria,
         difficulty,
-        estimatedDuration: data.estimatedDuration,
+        estimatedDuration: (data as any).estimatedDuration,
         draftVersion: JSON.stringify(data, null, 2),
         finalVersion: '',
         optimizationProgress: 0
@@ -323,40 +448,115 @@ ${context.previousChallenges.length > 0 ? `已有关卡类型: ${context.previou
       currentDesign = challenge.optimization2.optimizedDesign;
     }
     
-    const systemInstruction = `你是一个专业的关卡优化顾问。请对以下关卡设计进行第${optimizationRound}轮批判性分析和优化。
+    // 创建格式处理器
+    const processor = new AIFormatProcessor(
+      ChallengeOptimizationSchema,
+      {},
+      `【重要】必须严格按照JSON格式输出，不要添加任何解释文字。`
+    );
+    
+    const systemInstruction = `你是一个"色情大闯关"关卡设计的严苛批评家。你的职责是从**游戏机制创新性**和**玩法趣味性**角度，对关卡设计进行犀利批判和深度优化。
 
-当前关卡设计:
+当前关卡设计（第${optimizationRound}轮审核）:
 ${currentDesign}
 
-要求:
-1. 批判性分析当前设计的问题
-2. 提出具体的改进建议
-3. 给出优化后的完整设计
-4. 总结本次改进的要点
+## 批判维度（按重要性排序）：
 
-返回JSON格式:
+### 1. 【玩法机制创新性】★★★★★（最重要）
+**批判要点**：
+- 这个关卡的**核心玩法**是否足够创新？还是只是传统关卡换皮？
+- 游戏规则是否有独特的**互动机制**？还是简单的线性流程？
+- 是否有**多重玩法融合**？还是单一玩法？
+- 是否有**随机性/策略性/时间压力**等增加趣味的元素？
+- 参赛者的**决策空间**有多大？是否只有唯一最优解？
+
+**常见问题**：
+❌ 只是"跑得快就赢"、"分数高就过"这种浅层设计
+❌ 没有玩家选择和策略空间
+❌ 缺乏关卡间的玩法差异化
+❌ 规则过于简单或过于复杂
+
+### 2. 【游戏性与趣味性】★★★★☆
+**批判要点**：
+- 这个关卡**好玩吗**？有没有让人想一直玩下去的魅力？
+- 是否有**起伏和戏剧性**？还是一成不变？
+- 失败/成功的**反馈机制**是否清晰且有冲击力？
+- 观众和参赛者的**代入感**如何？
+- 是否有**可重复游玩价值**？
+
+### 3. 【色情元素融合度】★★★★☆
+**批判要点**：
+- 色情元素是否**自然融入玩法核心**？还是生硬添加？
+- 失败后果是否有**刺激性和代入感**？
+- 色情场景是否**服务于游戏玩法**？还是为黄而黄？
+
+### 4. 【规则可执行性】★★★☆☆
+**批判要点**：
+- 规则是否清晰且可量化判定？
+- 淘汰标准是否公平合理？
+
+## 优化要求：
+
+**必须做到**：
+1. **狠狠批判**现有设计的机制缺陷，不要客气
+2. **提出至少3个具体的机制创新点**
+3. **重新设计核心玩法**，而不是小修小补
+4. **增加玩家选择和策略空间**
+5. **融合多种玩法类型**（竞速+策略、解谜+盲盒等）
+6. **输出完整的优化版关卡设计**（JSON格式）
+
+**创新方向参考**（不要照搬）：
+- 增加**资源管理**机制（性能量、时间、道具等）
+- 引入**风险收益权衡**（冒险获得优势 vs 保守求稳）
+- 加入**多阶段/多路径**设计
+- 设置**动态难度调整**或**随机事件**
+- 增加**玩家间互动**（协作/背叛/竞争）
+- 融合**盲盒/抽卡**等随机元素
+- 加入**限时决策**或**信息不对称**
+
+${processor.getFormatInstruction()}
+
+返回格式示例:
 {
-  "critique": "批判分析(指出具体问题)",
-  "issues": ["问题1", "问题2", "问题3"],
-  "suggestions": ["建议1", "建议2", "建议3"],
-  "changes": ["修改1", "修改2", "修改3"],
-  "optimizedDesign": "优化后的完整设计(JSON字符串)",
-  "improvementSummary": "改进总结"
+  "critique": "【玩法机制批判】当前设计的核心问题是...(300字详细批判)",
+  "issues": [
+    "机制问题1：缺乏玩家决策空间，只是单纯的体能测试",
+    "机制问题2：没有策略深度，最优解过于明显",
+    "机制问题3：玩法单一，缺乏多样性和惊喜感"
+  ],
+  "suggestions": [
+    "创新建议1：引入资源管理机制，玩家需要权衡体力分配",
+    "创新建议2：增加多路径选择，高风险高回报 vs 低风险低回报",
+    "创新建议3：融合盲盒元素，增加随机性和不确定性"
+  ],
+  "changes": [
+    "将单一竞速改为：竞速+资源管理+路径选择的组合玩法",
+    "增加关卡内的决策点：3个关键节点需要玩家做出战术选择",
+    "引入动态事件：根据玩家选择触发不同色情场景"
+  ],
+  "optimizedDesign": "{完整的优化后关卡JSON设计}",
+  "improvementSummary": "本次优化的核心是将简单的XXX改造为具有策略深度的YYY玩法..."
 }`;
 
-    const prompt = `进行第${optimizationRound}轮优化,要深入分析问题并给出实质性改进。直接返回JSON。`;
+    const prompt = `进行第${optimizationRound}轮批判性优化：
+1. 从玩法机制创新性角度狠狠批判当前设计
+2. 提出至少3个具体的机制突破建议
+3. 重新设计核心玩法，不要小修小补
+4. 输出完整的优化版关卡
+直接返回JSON。`;
 
     try {
-      const result = await enhancedGenerate({
-        systemInstruction,
-        prompt,
-        gameState,
-        includeVectorMemories: false,
-        includePreset: true,
-        includeWorldbook: true
-      });
-
-      const data = JSON.parse(result);
+      // 使用带重试的处理
+      const data = await processor.processWithRetry(async () => {
+        return await enhancedGenerate({
+          systemInstruction,
+          prompt,
+          gameState,
+          includeVectorMemories: false,
+          includePreset: true,
+          includeWorldbook: true
+        });
+      }, 3);
       
       const optimization: ChallengeOptimization = {
         round: optimizationRound,

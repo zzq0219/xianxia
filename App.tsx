@@ -4,17 +4,21 @@ import { CharacterStatusModal } from './components/CharacterStatusModal';
 import EtiquetteHallModal from './components/EtiquetteHallModal';
 import { StartScreen } from './components/StartScreen';
 import { CARD_SELL_PRICES, CHARACTER_POOL, EQUIPMENT_POOL, exampleBountyTarget, examplePatient, femaleChar, initialGameState, maleChar, POSITIONS } from './constants';
-import { Announcement, ArenaRank, BattleState, BountyTarget, CharacterCard, EventChoice, GameState, LaborWorker, MedicalRecord, MemoryCategory, MemoryEntry, ModalType, Patient, PetCard, PlayerProfile, PrisonArea, Prisoner, PrisonerStatus, RandomEvent, Rarity, SaveSlot, Shop, SummarySettings, SummaryType } from './types';
+import { Announcement, ArenaRank, BattleState, BountyTarget, CharacterCard, EventChoice, GameState, LaborWorker, MedicalRecord, MemoryCategory, MemoryEntry, ModalType, Patient, PetCard, PlayerProfile, PrisonArea, Prisoner, PrisonerStatus, RandomEvent, Rarity, SaveSlot, Shop, SummarySettings, SummaryType, ViewMode } from './types';
 import { EtiquetteDesigner, EtiquetteSystem } from './types/etiquette';
 // import { generateExplorationStep, processCombatTurn, generateRandomEvent, generateAnnouncements } from './services/geminiService';
 import ActionNarrator from './components/ActionNarrator';
+import ActionPanel from './components/ActionPanel';
 import AnnouncementModal from './components/AnnouncementModal';
 import AnnouncementTicker from './components/AnnouncementTicker';
 import ArenaResultModal from './components/ArenaResultModal';
 import BattleActionPanel from './components/BattleActionPanel';
 import Battlefield from './components/Battlefield';
 import BattleResultModal from './components/BattleResultModal';
-import { BottomBar } from './components/BottomBar';
+import { HomeDashboard } from './components/HomeDashboard';
+import Inventory from './components/Inventory';
+import { NavigationDock } from './components/NavigationDock';
+// import { BottomBar } from './components/BottomBar';
 import BountyBoardModal from './components/BountyBoardModal';
 import BountyResultModal from './components/BountyResultModal';
 import BusinessModal from './components/BusinessModal';
@@ -208,6 +212,7 @@ const App: React.FC = () => {
     useIframeHeightSync(); // 激活 Iframe 高度同步
     const appRef = useRef<HTMLDivElement>(null);
     const [gameState, setGameState] = useState<GameState>(initialGameState);
+    const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.HOME); // New ViewMode state
     const [isGameReady, setIsGameReady] = useState(false); // 状态，用于标记游戏是否已从酒馆加载完毕
     const [showStartScreen, setShowStartScreen] = useState(true); // 控制是否显示启动封面
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -1482,12 +1487,24 @@ const App: React.FC = () => {
             gameState.playerProfile.cardCollection.find(collectionCard => collectionCard.id === partyCard.id) || partyCard
         );
 
-        // FIX: 修复敌方编队性别问题 - 从CHARACTER_POOL中筛选对应性别的角色
+        // FIX: 修复敌方编队性别问题 - 无论是否有pendingBattle，都要根据opponentGender重新生成敌方编队
+        // 从CHARACTER_POOL中筛选对应性别的角色
         const availableOpponentChars = CHARACTER_POOL.filter(c => c.gender === opponentGender);
-        // 随机选择一个符合性别要求的角色作为敌方
-        const opponentPartyForBattle = availableOpponentChars.length > 0
-            ? [availableOpponentChars[Math.floor(Math.random() * availableOpponentChars.length)]]
-            : (opponentGender === 'Male' ? [maleChar] : [femaleChar]); // 后备方案
+
+        // 生成与玩家编队数量相同的敌方角色，全部为指定性别
+        const opponentCount = playerPartyForBattle.length;
+        const opponentPartyForBattle: CharacterCard[] = [];
+
+        for (let i = 0; i < opponentCount; i++) {
+            if (availableOpponentChars.length > 0) {
+                // 随机选择一个符合性别的角色
+                const randomChar = availableOpponentChars[Math.floor(Math.random() * availableOpponentChars.length)];
+                opponentPartyForBattle.push(randomChar);
+            } else {
+                // 后备方案：使用默认角色
+                opponentPartyForBattle.push(opponentGender === 'Male' ? maleChar : femaleChar);
+            }
+        }
 
         const opponentName = pendingBattle
             ? (pendingBattle.combatLog[0].match(/与 (.*) 的战斗/)?.[1] || "挑战者")
@@ -2545,10 +2562,8 @@ const App: React.FC = () => {
     return (
         <div
             ref={appRef}
-            className="flex flex-col font-serif relative"
+            className="flex flex-col font-serif relative w-full h-full sm:w-[540px] sm:h-[960px]"
             style={{
-                width: '540px',
-                height: '960px',
                 overflow: 'hidden',
                 backgroundImage: `url('https://github.com/zzq0219/sillytavern/blob/main/%E3%80%90%E5%93%B2%E9%A3%8E%E5%A3%81%E7%BA%B8%E3%80%91%E4%BA%91%E9%9B%BE-%E4%BB%99%E4%BE%A0.png?raw=true')`,
                 backgroundSize: 'cover',
@@ -2569,23 +2584,50 @@ const App: React.FC = () => {
                 />
             )}
 
-            <main className="flex-grow flex flex-col items-center w-full pt-12 md:pt-16 pb-20 md:pb-28 px-2 sm:px-4">
-                {renderMainView()}
-            </main>
-
-            {gameState.mode === 'battle' && gameState.battle && !gameState.battle.isBattleOver && (
-                <div className="flex-shrink-0">
-                    <BattleActionPanel
-                        battleState={gameState.battle}
-                        isLoading={isLoading}
-                        onCombatAction={handleCombatAction}
-                        onFlee={handleFlee}
-                        onOpenCombatLog={() => setIsCombatLogVisible(true)}
+            <main className="flex-grow flex flex-col w-full overflow-hidden relative">
+                {/* VIEW: HOME (Cave Abode) */}
+                <div className={`absolute inset-0 pt-16 flex flex-col transition-opacity duration-300 ${viewMode === ViewMode.HOME ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
+                    <HomeDashboard
+                        isVisible={viewMode === ViewMode.HOME}
+                        gameState={gameState}
+                        onNavClick={openModal}
+                        onQuestClick={() => setIsQuestLogModalOpen(true)}
+                        onBusinessClick={() => setIsBusinessModalOpen(true)}
+                        onCultivationClick={() => setIsCultivationModalOpen(true)}
+                        onMemoryClick={() => setIsMemoryModalOpen(true)}
+                        onCharacterStatusClick={() => setIsCharacterStatusModalOpen(true)}
+                        onPrisonClick={() => setIsPrisonModalOpen(true)}
+                        onEtiquetteHallClick={() => setIsEtiquetteHallOpen(true)}
+                        onGauntletClick={() => setIsGauntletHallOpen(true)}
+                        onAnnouncementsClick={() => setIsAnnouncementModalOpen(true)}
+                        onSystemClick={() => setIsSaveLoadModalOpen(true)}
+                        onHospitalClick={() => setIsHospitalModalOpen(true)}
                     />
                 </div>
-            )}
 
-            {gameState.mode === 'battle' && gameState.battle?.isBattleOver && (
+                {/* VIEW: ADVENTURE */}
+                <div className={`absolute inset-0 pt-16 flex flex-col transition-opacity duration-300 ${viewMode === ViewMode.ADVENTURE ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
+                    <div className="flex-grow overflow-y-auto scrollbar-xianxia px-2 sm:px-4">
+                        <div className="max-w-3xl mx-auto h-full flex flex-col">
+                            {renderMainView()}
+                        </div>
+                    </div>
+                </div>
+
+                {/* VIEW: INVENTORY (Storage Bag) */}
+                <div className={`absolute inset-0 pt-16 flex flex-col transition-opacity duration-300 ${viewMode === ViewMode.INVENTORY ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
+                    <div className="h-full overflow-y-auto px-2 pt-2">
+                        <Inventory
+                            playerProfile={gameState.playerProfile}
+                            setPlayerProfile={(newProfile) => setGameState(prev => ({ ...prev, playerProfile: newProfile }))}
+                            onViewPet={setViewingPet}
+                        />
+                    </div>
+                </div>
+
+            </main>
+
+            {gameState.mode === 'battle' && gameState.battle?.isBattleOver && viewMode === ViewMode.ADVENTURE && (
                 <BattleResultModal
                     victory={gameState.battle.victory}
                     isFled={gameState.battle.isFled}
@@ -2593,31 +2635,70 @@ const App: React.FC = () => {
                 />
             )}
 
-            {gameState.mode === 'exploration' && (
-                <BottomBar
-                    gameState={gameState}
-                    isLoading={isLoading}
-                    error={error}
-                    onExplorationAction={handleExplorationAction}
-                    onNavClick={openModal}
-                    onMapClick={() => setIsMapOpen(true)}
-                    onInteractClick={() => setIsInteractionModalOpen(true)}
-                    onTelepathyClick={() => setIsTelepathyModalOpen(true)}
-                    onSystemClick={() => setIsSaveLoadModalOpen(true)}
-                    onQuestClick={() => setIsQuestLogModalOpen(true)}
-                    onBusinessClick={() => setIsBusinessModalOpen(true)}
-                    onHospitalClick={() => setIsHospitalModalOpen(true)}
-                    onBountyBoardClick={() => setIsBountyBoardOpen(true)}
-                    onNextDay={handleNextDay}
-                    onAnnouncementsClick={() => setIsAnnouncementModalOpen(true)}
-                    onCultivationClick={() => setIsCultivationModalOpen(true)}
-                    onMemoryClick={() => setIsMemoryModalOpen(true)}
-                    onCharacterStatusClick={() => setIsCharacterStatusModalOpen(true)}
-                    onPrisonClick={() => setIsPrisonModalOpen(true)}
-                    onEtiquetteHallClick={() => setIsEtiquetteHallOpen(true)}
-                    onGauntletClick={() => setIsGauntletHallOpen(true)}
-                />
-            )}
+            {/* Bottom Section: Actions & Navigation */}
+            <div className="flex-shrink-0 z-50 bg-[#050505] flex flex-col border-t border-white/5 shadow-2xl relative">
+
+                {/* Adventure Actions (Exploration) */}
+                {viewMode === ViewMode.ADVENTURE && gameState.mode === 'exploration' && (
+                    <div className="w-full px-4 pt-3 pb-2 bg-gradient-to-b from-[#0a0a0a] to-[#050505]">
+                        <div className="max-w-3xl mx-auto relative">
+                            <ActionPanel
+                                choices={gameState.exploration.choices}
+                                onAction={handleExplorationAction}
+                                isLoading={isLoading}
+                                error={error}
+                            />
+
+                            <div className="grid grid-cols-2 gap-3 mt-3">
+                                {/* Map Button */}
+                                <button
+                                    onClick={() => setIsMapOpen(true)}
+                                    className="relative overflow-hidden py-2.5 bg-gradient-to-r from-[#1c1c1c] to-[#151515] border border-stone-700/50 rounded-lg flex items-center justify-center gap-2 text-stone-400 hover:text-amber-200 hover:border-amber-500/30 hover:bg-white/5 transition-all duration-300 group shadow-lg"
+                                    title="世界地图"
+                                >
+                                    <div className="absolute inset-0 bg-gradient-to-r from-amber-500/0 via-amber-500/5 to-amber-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                    <i className="fa-solid fa-map-location-dot text-amber-700/50 group-hover:text-amber-500 group-hover:scale-110 transition-all duration-300"></i>
+                                    <span className="text-sm font-serif font-medium tracking-wide">世界地图</span>
+                                </button>
+
+                                {/* Cultivate Button */}
+                                <button
+                                    onClick={handleNextDay}
+                                    disabled={isLoading}
+                                    className="relative overflow-hidden py-2.5 bg-gradient-to-r from-[#1c1c1c] to-[#151515] border border-stone-700/50 rounded-lg flex items-center justify-center gap-2 text-stone-400 hover:text-amber-200 hover:border-amber-500/30 hover:bg-white/5 transition-all duration-300 group shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="修炼一日"
+                                >
+                                    {isLoading ? (
+                                        <i className="fa-solid fa-spinner fa-spin text-amber-500"></i>
+                                    ) : (
+                                        <>
+                                            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/0 via-amber-500/5 to-amber-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                            <i className="fa-solid fa-moon text-amber-700/50 group-hover:text-amber-500 group-hover:scale-110 transition-all duration-300"></i>
+                                            <span className="text-sm font-serif font-medium tracking-wide">修炼一日</span>
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Battle Actions */}
+                {viewMode === ViewMode.ADVENTURE && gameState.mode === 'battle' && gameState.battle && !gameState.battle.isBattleOver && (
+                    <div className="w-full px-2 pt-2 pb-1 bg-[#080808]">
+                        <BattleActionPanel
+                            battleState={gameState.battle}
+                            isLoading={isLoading}
+                            onCombatAction={handleCombatAction}
+                            onFlee={handleFlee}
+                            onOpenCombatLog={() => setIsCombatLogVisible(true)}
+                        />
+                    </div>
+                )}
+
+                {/* Navigation Dock */}
+                <NavigationDock currentView={viewMode} onChangeView={setViewMode} />
+            </div>
 
             <PersonalInfoPanel
                 isOpen={isPersonalInfoOpen}

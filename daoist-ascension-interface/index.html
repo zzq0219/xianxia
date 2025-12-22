@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Daoist Ascension</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;900&family=Zhi+Mang+Xing&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              serif: ['"Noto Serif SC"', 'serif'],
+              cursive: ['"Zhi Mang Xing"', 'cursive'],
+              title: ['"Ma Shan Zheng"', 'cursive'],
+            },
+            colors: {
+              'ink-950': '#080808',
+              'ink-900': '#121212',
+              'ink-800': '#1c1c1c',
+              'gold-light': '#fceecb',
+              'gold-base': '#d4af37',
+              'gold-dark': '#8a6d20',
+              'jade-light': '#a7f3d0',
+              'jade-base': '#10b981',
+              'jade-dark': '#064e3b',
+              'vermilion': '#9f1239',
+            },
+            animation: {
+              'float': 'float 4s ease-in-out infinite',
+              'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
+              'ink-spread': 'inkSpread 0.6s ease-out forwards',
+              'fade-in': 'fadeIn 0.5s ease-out forwards',
+              'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            },
+            keyframes: {
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-6px)' },
+              },
+              pulseGlow: {
+                '0%, 100%': { opacity: 0.8, filter: 'brightness(1)' },
+                '50%': { opacity: 1, filter: 'brightness(1.3) drop-shadow(0 0 10px #d4af37)' },
+              },
+              inkSpread: {
+                '0%': { transform: 'scale(0.8)', opacity: 0 },
+                '100%': { transform: 'scale(1)', opacity: 1 },
+              },
+              fadeIn: {
+                '0%': { opacity: 0 },
+                '100%': { opacity: 1 },
+              },
+              slideUp: {
+                '0%': { transform: 'translateY(20px)', opacity: 0 },
+                '100%': { transform: 'translateY(0)', opacity: 1 },
+              }
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      body {
+        background-color: #080808;
+        color: #e5e5e5;
+        overflow: hidden;
+      }
+      /* Hide scrollbar but keep functionality */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      
+      /* Ink Texture Background */
+      .bg-ink-texture {
+        background-image: url('https://www.transparenttextures.com/patterns/black-scales.png');
+        background-blend-mode: overlay;
+      }
+      
+      /* Golden Border Gradient */
+      .border-gold-gradient {
+        border-image: linear-gradient(to bottom, #d4af37, #8a6d20) 1;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

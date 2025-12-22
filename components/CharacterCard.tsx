@@ -29,7 +29,7 @@ const StatBar: React.FC<{ value: number; maxValue: number; color: string; label:
 };
 
 const CharacterCardDisplay: React.FC<CharacterCardDisplayProps> = ({ participant, isPlayer, wasHit }) => {
-    const { card, currentHp, currentMp, statusEffects } = participant;
+    const { card, currentHp, currentMp, statusEffects, calculatedStats } = participant;
     const [isAnimating, setIsAnimating] = useState(false);
     const [showStatusList, setShowStatusList] = useState(false);
 
@@ -54,8 +54,8 @@ const CharacterCardDisplay: React.FC<CharacterCardDisplayProps> = ({ participant
                     <p className={`font-medium text-sm ${getRarityTextColor(card.rarity)}`}>{card.realm}</p>
                 </div>
                 <div className="space-y-2">
-                    <StatBar value={currentHp} maxValue={card.baseAttributes.maxHp} color="bg-gradient-to-r from-red-700 via-red-600 to-red-500" label="气血" />
-                    <StatBar value={currentMp} maxValue={card.baseAttributes.maxMp} color="bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500" label="真元" />
+                    <StatBar value={currentHp} maxValue={calculatedStats.maxHp} color="bg-gradient-to-r from-red-700 via-red-600 to-red-500" label="气血" />
+                    <StatBar value={currentMp} maxValue={calculatedStats.maxMp} color="bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500" label="真元" />
                 </div>
                 <div className="mt-3 h-8 flex items-center justify-center">
                     <button

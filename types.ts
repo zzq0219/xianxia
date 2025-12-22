@@ -141,6 +141,7 @@ export interface ReputationEvent {
 // Define the overall Player State
 export interface PlayerProfile {
   name: string;
+  avatar?: string;
   title: string;
   relationships: CharacterRelationship[];
   spiritStones: number;
@@ -193,6 +194,24 @@ export interface Announcement {
   content: string;
   timestamp: string; // e.g., "天元32年，惊蛰"
   category: '宗门' | '奇遇' | '世界';
+}
+
+export enum ViewMode {
+  HOME = 'HOME',       // 洞府
+  ADVENTURE = 'ADVENTURE', // 历练
+  INVENTORY = 'INVENTORY', // 储物袋
+}
+
+export type MenuCategory = 'sect' | 'world' | 'personal';
+
+export interface SystemMenuItem {
+  id: string;
+  label: string;
+  icon: string; // FontAwesome class string
+  category: MenuCategory;
+  desc?: string;
+  color?: string;
+  badge?: number;
 }
 
 // Define the main Game State

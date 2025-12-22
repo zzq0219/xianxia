@@ -25,22 +25,60 @@ const BattleActionPanel: React.FC<BattleActionPanelProps> = ({ battleState, isLo
 
     return (
         <>
-            <footer className="w-full h-28 bg-black/90 p-4 flex items-center justify-center border-t border-stone-700">
-                <div className="flex items-center justify-center gap-4">
-                    <button onClick={onOpenCombatLog} className="w-32 h-14 text-lg bg-stone-800/80 hover:bg-stone-700/80 rounded-md font-serif border border-stone-600/50">
-                        记录
-                    </button>
+            <footer className="w-full h-32 bg-gradient-to-t from-black via-stone-900 to-stone-800/90 p-4 flex items-center justify-center border-t-2 border-stone-600/50 shadow-[0_-5px_20px_rgba(0,0,0,0.5)] z-20 relative backdrop-blur-sm">
+                {/* Decorative Elements */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent"></div>
 
+                <div className="flex items-center justify-center gap-8 md:gap-16 w-full max-w-4xl relative">
+
+                    {/* Left Button: Combat Log */}
                     <button
-                        onClick={() => setIsActionMenuOpen(true)}
-                        disabled={!isPlayerTurn}
-                        className="w-40 h-16 text-xl bg-sky-700/80 hover:bg-sky-600/90 rounded-lg font-serif border-2 border-sky-500/80 text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-sky-500/30"
+                        onClick={onOpenCombatLog}
+                        className="
+                            group relative w-24 h-24 rounded-full bg-stone-800 border-2 border-stone-600
+                            hover:border-stone-400 hover:bg-stone-700 transition-all duration-300
+                            shadow-lg shadow-black flex flex-col items-center justify-center
+                        "
                     >
-                        行动
+                        <span className="text-2xl mb-1 group-hover:scale-110 transition-transform">📜</span>
+                        <span className="text-xs font-serif text-stone-400 group-hover:text-stone-200">战况</span>
                     </button>
 
-                    <button onClick={onFlee} className="w-32 h-14 text-lg bg-red-800/80 hover:bg-red-700/80 rounded-md font-serif border border-red-600/50 text-white">
-                        逃命
+                    {/* Center Button: Action (Main CTA) */}
+                    <div className="relative -mt-8">
+                        <button
+                            onClick={() => setIsActionMenuOpen(true)}
+                            disabled={!isPlayerTurn}
+                            className={`
+                                w-32 h-32 rounded-full border-4 flex flex-col items-center justify-center z-10 relative
+                                transition-all duration-300 transform hover:scale-105 active:scale-95
+                                shadow-[0_0_25px_rgba(0,0,0,0.6)]
+                                ${!isPlayerTurn
+                                    ? 'bg-stone-800 border-stone-700 text-stone-500 cursor-not-allowed opacity-80'
+                                    : 'bg-gradient-to-br from-sky-900 to-blue-900 border-sky-400/60 text-white shadow-[0_0_20px_rgba(56,189,248,0.4)] hover:shadow-[0_0_30px_rgba(56,189,248,0.6)] animate-pulse-slow'
+                                }
+                            `}
+                        >
+                            <span className="text-4xl mb-1 drop-shadow-md">⚔️</span>
+                            <span className="text-xl font-bold font-serif tracking-widest drop-shadow-md">出招</span>
+                        </button>
+                        {/* Glow effect behind main button */}
+                        {isPlayerTurn && (
+                            <div className="absolute inset-0 rounded-full bg-sky-500/20 blur-xl -z-10 animate-pulse"></div>
+                        )}
+                    </div>
+
+                    {/* Right Button: Flee */}
+                    <button
+                        onClick={onFlee}
+                        className="
+                            group relative w-24 h-24 rounded-full bg-stone-800 border-2 border-stone-600
+                            hover:border-red-500/50 hover:bg-red-900/20 transition-all duration-300
+                            shadow-lg shadow-black flex flex-col items-center justify-center
+                        "
+                    >
+                        <span className="text-2xl mb-1 group-hover:scale-110 transition-transform">🏃</span>
+                        <span className="text-xs font-serif text-stone-400 group-hover:text-red-300">撤退</span>
                     </button>
                 </div>
             </footer>

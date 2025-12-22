@@ -28,35 +28,35 @@ const MedicalRecordModal: React.FC<MedicalRecordModalProps> = ({ isOpen, onClose
           </button>
         </div>
 
-        <div className="flex-grow p-6 overflow-y-auto space-y-4">
+        <div className="flex-grow p-6 overflow-y-auto space-y-4 text-stone-200">
           <div className="bg-black/20 p-4 rounded-lg border border-stone-700/50">
             <h4 className="font-semibold text-amber-400 mb-2">基本信息</h4>
-            <p><strong>姓名:</strong> {record.name}</p>
-            <p><strong>性别:</strong> {record.gender}</p>
-            <p><strong>年龄:</strong> {record.age}</p>
-            <p><strong>背景:</strong> {record.background}</p>
+            <p className="text-stone-200"><strong className="text-amber-300">姓名:</strong> {record.name}</p>
+            <p className="text-stone-200"><strong className="text-amber-300">性别:</strong> {record.gender}</p>
+            <p className="text-stone-200"><strong className="text-amber-300">年龄:</strong> {record.age}</p>
+            <p className="text-stone-200"><strong className="text-amber-300">背景:</strong> {record.background}</p>
           </div>
           <div className="bg-black/20 p-4 rounded-lg border border-stone-700/50">
             <h4 className="font-semibold text-pink-400 mb-2">性特征</h4>
-            <p><strong>器官户型:</strong> {record.genitalShape || '未记录'}</p>
-            <div>
-              <strong>特征:</strong>
+            <p className="text-stone-200"><strong className="text-pink-300">器官户型:</strong> {record.genitalShape || '未记录'}</p>
+            <div className="text-stone-200">
+              <strong className="text-pink-300">特征:</strong>
               <ul className="list-disc list-inside ml-4">
                 {record.sexualFeatures && Array.isArray(record.sexualFeatures) && record.sexualFeatures.length > 0 ? (
                   record.sexualFeatures.map((feature, index) => (
-                    <li key={index}>
+                    <li key={index} className="text-stone-200">
                       {typeof feature === 'string' ? feature : typeof feature === 'object' && feature !== null ? JSON.stringify(feature) : String(feature)}
                     </li>
                   ))
                 ) : (
-                  <li className="text-gray-400">暂无记录</li>
+                  <li className="text-stone-400">暂无记录</li>
                 )}
               </ul>
             </div>
           </div>
           <div className="bg-black/20 p-4 rounded-lg border border-red-500/30">
             <h4 className="font-semibold text-red-400 mb-2">病症描述</h4>
-            <p className="whitespace-pre-wrap">{record.illnessDescription}</p>
+            <p className="whitespace-pre-wrap text-stone-200">{record.illnessDescription}</p>
           </div>
         </div>
       </div>

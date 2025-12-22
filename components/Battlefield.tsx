@@ -54,34 +54,60 @@ const PetDisplay: React.FC<{ pet: PetCard }> = ({ pet }) => (
 
 const Battlefield: React.FC<BattlefieldProps> = ({ player, opponent, animation, lastHit }) => {
     return (
-        <div className="w-full h-full relative flex justify-around items-center p-4">
-            {/* Player's Side */}
-            <div className="flex items-center gap-4">
-                <div className="animate-fade-in transition-transform duration-300 hover:scale-105">
-                    <CharacterCardDisplay participant={player} isPlayer={true} wasHit={lastHit === 'player'} />
+        <div className="w-full h-full relative flex flex-col md:flex-row justify-center items-center p-4 overflow-hidden">
+            {/* Atmospheric Background Overlay */}
+            <div className="absolute inset-0 bg-radial-gradient from-transparent via-black/40 to-black/80 pointer-events-none z-0" />
+
+            {/* Player's Side (Left/Bottom) */}
+            <div className="relative z-10 flex-1 flex flex-col items-center md:items-end justify-center gap-6 md:pr-12 lg:pr-24 transition-all duration-500">
+                <div className="relative group">
+                    {/* Character Glow/Aura */}
+                    <div className="absolute inset-0 bg-sky-500/10 rounded-full blur-3xl group-hover:bg-sky-500/20 transition-all duration-700 pointer-events-none" />
+
+                    <div className="animate-fade-in transition-transform duration-300 hover:scale-105 relative z-10">
+                        <CharacterCardDisplay participant={player} isPlayer={true} wasHit={lastHit === 'player'} />
+                    </div>
+
+                    {/* Platform/Ground Effect */}
+                    <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-48 h-12 bg-black/60 blur-xl rounded-[100%] z-0" />
                 </div>
+
                 {player.pet && (
-                    <div className="animate-fade-in-right">
+                    <div className="animate-fade-in-right absolute -right-4 top-0 md:top-auto md:-right-24 md:bottom-0">
                         <PetDisplay pet={player.pet} />
                     </div>
                 )}
             </div>
 
-            {/* Animation Layer */}
-            <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                {animation && <CombatAnimationEffect animation={animation} />}
+            {/* VS Divider / Center Space */}
+            <div className="relative z-0 h-12 w-full md:w-24 flex items-center justify-center opacity-50">
+                {/* Optional: Add VS icon or center decoration here if desired */}
             </div>
 
-            {/* Opponent's Side */}
-            <div className="flex items-center gap-4">
+            {/* Opponent's Side (Right/Top) */}
+            <div className="relative z-10 flex-1 flex flex-col items-center md:items-start justify-center gap-6 md:pl-12 lg:pl-24 transition-all duration-500">
+                <div className="relative group">
+                    {/* Enemy Glow/Aura */}
+                    <div className="absolute inset-0 bg-red-500/10 rounded-full blur-3xl group-hover:bg-red-500/20 transition-all duration-700 pointer-events-none" />
+
+                    <div className="animate-fade-in transition-transform duration-300 hover:scale-105 relative z-10">
+                        <CharacterCardDisplay participant={opponent} isPlayer={false} wasHit={lastHit === 'opponent'} />
+                    </div>
+
+                    {/* Platform/Ground Effect */}
+                    <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-48 h-12 bg-black/60 blur-xl rounded-[100%] z-0" />
+                </div>
+
                 {opponent.pet && (
-                    <div className="animate-fade-in-left">
+                    <div className="animate-fade-in-left absolute -left-4 top-0 md:top-auto md:-left-24 md:bottom-0">
                         <PetDisplay pet={opponent.pet} />
                     </div>
                 )}
-                <div className="animate-fade-in transition-transform duration-300 hover:scale-105">
-                    <CharacterCardDisplay participant={opponent} isPlayer={false} wasHit={lastHit === 'opponent'} />
-                </div>
+            </div>
+
+            {/* Animation Layer */}
+            <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
+                {animation && <CombatAnimationEffect animation={animation} />}
             </div>
         </div>
     );

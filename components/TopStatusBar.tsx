@@ -62,38 +62,49 @@ const TopStatusBar: React.FC<TopStatusBarProps> = ({ playerProfile, location, on
   // 正常模式：完整显示
   return (
     <header
-      className={`fixed top-0 left-0 right-0 h-16 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm p-3 flex justify-between items-center z-30 font-serif text-sm transition-transform duration-300 ${isScrollingDown ? '-translate-y-full' : 'translate-y-0'
+      className={`fixed top-0 left-0 right-0 h-16 bg-gradient-to-b from-[#050505]/95 via-[#0a0a0a]/80 to-transparent backdrop-blur-md px-4 flex justify-between items-center z-30 font-serif text-sm transition-transform duration-300 border-b border-white/5 shadow-2xl ${isScrollingDown ? '-translate-y-full' : 'translate-y-0'
         }`}
     >
+      {/* 装饰性背景 */}
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-900/30 to-transparent"></div>
+
       {/* 左侧：个人信息 */}
-      <div className="flex items-center gap-4 pointer-events-auto">
+      <div className="flex items-center gap-4 pointer-events-auto z-10">
         <button
           onClick={onProfileClick}
-          className="flex items-center gap-3 bg-black/50 p-2 pr-4 rounded-full border border-yellow-400/20 hover:bg-black/70 transition-all duration-200 active:scale-95 shadow-lg"
+          className="group flex items-center gap-3 bg-[#111] p-1.5 pr-4 rounded-full border border-stone-800 hover:border-amber-500/30 hover:bg-black/80 transition-all duration-300 active:scale-95 shadow-lg ring-1 ring-white/5"
         >
-          <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-yellow-400 border border-yellow-400/30">
-            <i className="fa-solid fa-user"></i>
+          <div className="w-9 h-9 rounded-full bg-stone-900 flex items-center justify-center text-amber-500 border border-stone-700 group-hover:border-amber-500/50 transition-colors shadow-inner">
+            {playerProfile.avatar ? (
+              <img src={playerProfile.avatar} alt="Avatar" className="w-full h-full rounded-full object-cover opacity-90 group-hover:opacity-100" />
+            ) : (
+              <i className="fa-solid fa-user-taoism text-lg"></i>
+            )}
           </div>
-          <div>
-            <h2 className="font-semibold text-white">{playerProfile.name}</h2>
-            <p className="text-xs text-yellow-300">{playerProfile.title}</p>
+          <div className="flex flex-col items-start">
+            <h2 className="font-bold text-stone-200 group-hover:text-amber-100 transition-colors tracking-wide leading-tight">{playerProfile.name}</h2>
+            <p className="text-[10px] text-amber-500/80 font-medium tracking-wider">{playerProfile.title}</p>
           </div>
         </button>
       </div>
 
-      {/* 中间：地点 */}
-      <div className="absolute left-1/2 -translate-x-1/2 bg-black/50 px-6 py-2 rounded-full border border-yellow-400/20 shadow-lg backdrop-blur-sm">
-        <p className="text-white font-semibold whitespace-nowrap">{location}</p>
-      </div>
-
-      {/* 右侧：灵石 */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-3 bg-black/50 p-2 pl-4 rounded-full border border-yellow-400/20 shadow-lg pointer-events-auto backdrop-blur-sm">
-          <i className="fa-solid fa-gem text-yellow-400 text-lg"></i>
-          <span className="text-white font-bold text-lg">{playerProfile.spiritStones}</span>
+      {/* 右侧：资源与位置 */}
+      <div className="flex items-center gap-3 pointer-events-auto z-10">
+        <div className="flex items-center gap-3 bg-[#111]/80 pl-4 pr-2 py-1.5 rounded-full border border-stone-800 shadow-lg backdrop-blur-md ring-1 ring-white/5">
+          {/* 灵石 */}
+          <div className="flex items-center gap-1.5 border-r border-stone-700/50 pr-3">
+            <i className="fa-solid fa-coins text-amber-400 text-xs drop-shadow-[0_0_5px_rgba(251,191,36,0.5)]"></i>
+            <span className="text-stone-200 font-bold font-mono text-sm">{playerProfile.spiritStones}</span>
+          </div>
+          {/* 地点 */}
+          <div className="flex items-center gap-1.5 pl-1">
+            <span className="text-xs text-stone-400 font-serif">{location}</span>
+            <i className="fa-solid fa-location-dot text-[10px] text-emerald-500/80"></i>
+          </div>
         </div>
-        <button onClick={toggleFullscreen} className="w-10 h-10 flex items-center justify-center bg-black/50 rounded-full border border-yellow-400/20 hover:bg-black/70 transition-all active:scale-95 shadow-lg">
-          <i className={`fa-solid ${isFullscreen ? 'fa-compress' : 'fa-expand'} text-yellow-400 text-lg`}></i>
+
+        <button onClick={toggleFullscreen} className="w-9 h-9 flex items-center justify-center bg-[#111] rounded-full border border-stone-800 hover:border-stone-600 hover:text-amber-400 text-stone-500 transition-all active:scale-95 shadow-lg ring-1 ring-white/5">
+          <i className={`fa-solid ${isFullscreen ? 'fa-compress' : 'fa-expand'} text-xs`}></i>
         </button>
       </div>
     </header>

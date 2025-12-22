@@ -46,10 +46,10 @@ const SortButton: React.FC<{ label: string; isActive: boolean; onClick: () => vo
 
 
 const CharacterCardItem: React.FC<{ card: CharacterCard }> = ({ card }) => (
-    <div className={`p-3 rounded-lg border-2 text-center h-full ${getRarityBorderColor(card.rarity)} ${getRarityBgColor(card.rarity, false)}`}>
-        <p className="font-bold font-serif text-white">{card.name}</p>
+    <div className={`p-2 rounded-lg border-2 text-center h-full ${getRarityBorderColor(card.rarity)} ${getRarityBgColor(card.rarity, false)}`}>
+        <p className="font-bold font-serif text-white text-sm truncate">{card.name}</p>
         <p className={`text-xs font-semibold ${getRarityTextColor(card.rarity)}`}>{card.realm}</p>
-        <p className="text-xs text-gray-400 mt-1 truncate">{card.title}</p>
+        <p className="text-xs text-gray-400 mt-0.5 truncate">{card.title}</p>
     </div>
 );
 
@@ -65,34 +65,32 @@ const GenderIcon: React.FC<{ gender: GenderLock | undefined }> = ({ gender }) =>
 };
 
 const SkillItem: React.FC<{ skill: Skill }> = ({ skill }) => (
-    <div className={`relative p-3 rounded-lg border-2 h-full ${getRarityBorderColor(skill.rarity)} ${getRarityBgColor(skill.rarity, false)}`}>
+    <div className={`relative p-2 rounded-lg border-2 h-full ${getRarityBorderColor(skill.rarity)} ${getRarityBgColor(skill.rarity, false)}`}>
         <GenderIcon gender={skill.genderLock} />
-        <div className="flex justify-between items-baseline">
-            <h5 className={`font-bold ${getRarityTextColor(skill.rarity)}`}>{skill.name}</h5>
-            <span className="text-sm font-mono text-blue-400">{skill.cost} 真元</span>
-        </div>
-        <p className="text-sm text-gray-300 mt-1 line-clamp-2">{skill.description}</p>
+        <h5 className={`font-bold text-sm truncate ${getRarityTextColor(skill.rarity)}`}>{skill.name}</h5>
+        <span className="text-xs font-mono text-blue-400">{skill.cost} 真元</span>
+        <p className="text-xs text-gray-300 mt-0.5 line-clamp-1">{skill.description}</p>
     </div>
 );
 
 const EquipmentItem: React.FC<{ item: Equipment }> = ({ item }) => (
-    <div className={`relative p-3 rounded-lg border-2 h-full ${getRarityBorderColor(item.rarity)} ${getRarityBgColor(item.rarity, false)}`}>
+    <div className={`relative p-2 rounded-lg border-2 h-full ${getRarityBorderColor(item.rarity)} ${getRarityBgColor(item.rarity, false)}`}>
         <GenderIcon gender={item.genderLock} />
-        <h5 className={`font-bold truncate ${getRarityTextColor(item.rarity)}`}>{item.name}</h5>
-        <div className="text-xs text-gray-300 mt-1 space-y-0.5">
-            {Object.entries(item.stats).map(([stat, value]) => (
-                <p key={stat}>{stat}: <span className="text-green-400">+{value}</span></p>
+        <h5 className={`font-bold text-sm truncate ${getRarityTextColor(item.rarity)}`}>{item.name}</h5>
+        <div className="text-xs text-gray-300 mt-0.5 space-y-0">
+            {Object.entries(item.stats).slice(0, 3).map(([stat, value]) => (
+                <p key={stat} className="truncate">{stat}: <span className="text-green-400">+{typeof value === 'number' && value < 1 ? `${(value * 100).toFixed(0)}%` : value}</span></p>
             ))}
         </div>
     </div>
 );
 
 const PetCardItem: React.FC<{ card: PetCard }> = ({ card }) => (
-    <div className={`relative p-3 rounded-lg border-2 text-center h-full ${getRarityBorderColor(card.rarity)} ${getRarityBgColor(card.rarity, false)}`}>
+    <div className={`relative p-2 rounded-lg border-2 text-center h-full ${getRarityBorderColor(card.rarity)} ${getRarityBgColor(card.rarity, false)}`}>
         <GenderIcon gender={card.gender} />
-        <p className="font-bold font-serif text-white">{card.name}</p>
+        <p className="font-bold font-serif text-white text-sm truncate">{card.name}</p>
         <p className={`text-xs font-semibold ${getRarityTextColor(card.rarity)}`}>[{card.rarity}]</p>
-        <p className="text-xs text-gray-400 mt-1 truncate">{card.description}</p>
+        <p className="text-xs text-gray-400 mt-0.5 truncate">{card.description}</p>
     </div>
 );
 
@@ -180,7 +178,7 @@ const Inventory: React.FC<InventoryProps> = ({ playerProfile, setPlayerProfile, 
                                 </div>
                             </div>
                         </div>
-                        <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        <div className="p-3 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                             {sortedChars.map(char => (
                                 <button
                                     key={char.id}
@@ -228,7 +226,7 @@ const Inventory: React.FC<InventoryProps> = ({ playerProfile, setPlayerProfile, 
                                 groupedSkills[rarity] && groupedSkills[rarity].length > 0 ? (
                                     <div key={rarity}>
                                         <h4 className={`font-semibold mb-2 text-lg ${getRarityTextColor(rarity)}`}>【{rarity}】</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                                             {groupedSkills[rarity].map(skill => (
                                                 <button key={skill.id} onClick={() => setSelectedSkill(skill)} className="text-left transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-lg">
                                                     <SkillItem skill={skill} />
@@ -282,7 +280,7 @@ const Inventory: React.FC<InventoryProps> = ({ playerProfile, setPlayerProfile, 
                             <SortButton label="女性专用" isActive={genderFilter === 'Female'} onClick={() => setGenderFilter('Female')} />
                             <SortButton label="通用" isActive={genderFilter === 'Universal'} onClick={() => setGenderFilter('Universal')} />
                         </div>
-                        <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        <div className="p-3 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                             {filteredEquip.map(item => (
                                 <button
                                     key={item.id}
@@ -321,7 +319,7 @@ const Inventory: React.FC<InventoryProps> = ({ playerProfile, setPlayerProfile, 
                                 <TabButton label="雌性" isActive={petSubTab === '雌性'} onClick={() => setPetSubTab('雌性')} />
                             </div>
                         </div>
-                        <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        <div className="p-3 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                             {sortedPets.map(pet => (
                                 <button
                                     key={pet.id}
@@ -351,7 +349,7 @@ const Inventory: React.FC<InventoryProps> = ({ playerProfile, setPlayerProfile, 
                 <TabButton label="装备库" isActive={mainTab === '装备库'} onClick={() => setMainTab('装备库')} />
                 <TabButton label="日常道具" isActive={mainTab === '日常道具'} onClick={() => setMainTab('日常道具')} />
             </div>
-            <div className="flex-grow overflow-y-auto bg-black/20 relative">
+            <div className="flex-grow overflow-y-auto bg-black/20 relative pb-4">
                 {renderContent()}
             </div>
 
