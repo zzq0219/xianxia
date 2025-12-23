@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /**
  * 仙侠卡牌RPG游戏 - UI增强样式表
  * 专业级CSS美化方案
@@ -51,13 +55,13 @@
    2. 装饰性边框系统
    ======================================== */
 
-/* 华丽边框 - 用于Modal */
+/* 华丽边框 - 用于Modal (增强可见度) */
 .ornate-border {
   position: relative;
-  border: 2px solid rgba(252, 211, 77, 0.3);
-  box-shadow: 
-    0 0 30px rgba(252, 211, 77, 0.1),
-    inset 0 0 20px rgba(252, 211, 77, 0.05);
+  border: 2px solid rgba(252, 211, 77, 0.6) !important; /* 增加不透明度 */
+  box-shadow:
+    0 0 30px rgba(252, 211, 77, 0.2),
+    inset 0 0 20px rgba(252, 211, 77, 0.1) !important;
 }
 
 .ornate-border::before {
@@ -66,12 +70,12 @@
   inset: -4px;
   border-radius: inherit;
   padding: 2px;
-  background: linear-gradient(135deg, 
-    rgba(252, 211, 77, 0.4), 
-    rgba(220, 38, 38, 0.2), 
-    rgba(147, 51, 234, 0.3),
-    rgba(252, 211, 77, 0.4)
-  );
+  background: linear-gradient(135deg,
+    rgba(252, 211, 77, 0.8),
+    rgba(220, 38, 38, 0.5),
+    rgba(147, 51, 234, 0.6),
+    rgba(252, 211, 77, 0.8)
+  ) !important;
   -webkit-mask: 
     linear-gradient(#fff 0 0) content-box, 
     linear-gradient(#fff 0 0);
@@ -444,12 +448,22 @@
    11. 文字特效
    ======================================== */
 
-/* 金色渐变文字 */
+/* 金色渐变文字 (增强对比度) */
 .text-gradient-gold {
-  background: linear-gradient(135deg, #fde68a 0%, #fcd34d 50%, #f59e0b 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background: linear-gradient(180deg, #fffbeb 0%, #fbbf24 40%, #d97706 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important; /* Fallback */
+  -webkit-text-fill-color: transparent !important;
+  font-weight: 800 !important;
+  /* 增加文字阴影以提高可读性，但这通常对 transparent text 不生效，除非用 drop-shadow filter */
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+}
+
+/* 纯金色文字 (替代方案，高对比度) */
+.text-gold-solid {
+  color: #fbbf24 !important; /* amber-400 */
+  text-shadow: 0 2px 4px rgba(0,0,0,0.9);
   font-weight: 700;
 }
 

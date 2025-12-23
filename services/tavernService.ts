@@ -88,7 +88,31 @@ export async function generateExplorationStep(storyHistory: string, playerAction
 5. **关系更新**: 如果剧情导致角色关系发生变化，你可以包含一个 'relationshipUpdate' 对象。
 6. 更新游戏世界的状态（地点，时间）。
 7. 提供三个富有创意、各不相同且简洁的行动选项。
-8. 你的最终输出必须是一个包裹在 \`\`\`json ... \`\`\` 代码块中的JSON对象。不要在代码块之外添加任何解释或注释。`;
+8. 你的最终输出必须是一个包裹在 \`\`\`json ... \`\`\` 代码块中的JSON对象。不要在代码块之外添加任何解释或注释。
+
+**重要：JSON输出格式必须严格遵循以下结构（所有必填字段不能省略）：**
+\`\`\`json
+{
+  "story": "（必填）故事的下一章内容，200-500字的叙事文本",
+  "location": "（必填）当前地点名称，如'青蛇宗山门'",
+  "time": "（必填）当前时间，如'第3天，午后'",
+  "choices": ["（必填）选项1", "选项2", "选项3"]
+}
+\`\`\`
+
+**字段说明：**
+- **story**: 字符串，必填。故事的下一章内容，应该是一段完整的叙事文本，描述玩家行动的结果和后续发展。
+- **location**: 字符串，必填。当前所在地点的名称。
+- **time**: 字符串，必填。当前的游戏时间。
+- **choices**: 字符串数组，必填。必须包含恰好3个选项，每个选项是一个简短的行动描述（10-30字）。
+
+**可选字段（根据情况添加）：**
+- questUpdate: { questId: string, objectiveId: string, progress: number }
+- newQuest: Quest对象
+- relationshipUpdate: { characterId: string, status?: string, newTags?: string[] }
+- reputationUpdate: { scoreChange: number, description: string }
+- event: { type: 'battle', opponentName: string } （仅在触发战斗时）
+- pendingChallenge: { challengerName: string, reason: string }`;
 
     const truncatedHistory = storyHistory.length > 2000 ? `...${storyHistory.slice(-2000)}` : storyHistory;
     const activeParty = playerProfile.maleParty.length > 0 ? playerProfile.maleParty : playerProfile.femaleParty;
@@ -261,7 +285,54 @@ export async function generateRandomEvent(location: string, playerProfile: Playe
 3. 创建2-3个有意义的选择，并有明确的风险/回报结果。
 4. 结果必须是指定类型之一。
 5. 如果结果是 'reward_item'，你必须从提供的可用装备列表中选择一个物品名称。
-6. 你的最终输出必须是一个包裹在 \`\`\`json ... \`\`\` 代码块中的JSON对象。不要在代码块之外添加任何解释或注释。`;
+6. 你的最终输出必须是一个包裹在 \`\`\`json ... \`\`\` 代码块中的JSON对象。不要在代码块之外添加任何解释或注释。
+
+**重要：JSON输出格式必须严格遵循以下结构（所有必填字段不能省略）：**
+\`\`\`json
+{
+  "title": "（必填）事件标题，简短有吸引力",
+  "story": "（必填）事件故事描述，100-200字",
+  "choices": [
+    {
+      "text": "（必填）选项显示文本",
+      "outcome": {
+        "type": "（必填）结果类型",
+        "description": "（必填）结果描述"
+      }
+    }
+  ]
+}
+\`\`\`
+
+**字段说明：**
+- **title**: 字符串，必填。事件的标题。
+- **story**: 字符串，必填。事件的故事背景描述。
+- **choices**: 数组，必填。必须包含2-3个选项对象。
+
+**每个选项对象必须包含：**
+- **text**: 字符串，必填。选项的显示文本（玩家看到的选择）。
+- **outcome**: 对象，必填。选择该选项后的结果。
+
+**outcome对象的type必须是以下之一：**
+1. **reward_stones**: 获得灵石
+   - 必须包含: type, amount (数字), description (字符串)
+   - 示例: { "type": "reward_stones", "amount": 100, "description": "你获得了100灵石" }
+
+2. **lose_stones**: 失去灵石
+   - 必须包含: type, amount (数字), description (字符串)
+   - 示例: { "type": "lose_stones", "amount": 50, "description": "你损失了50灵石" }
+
+3. **battle**: 触发战斗
+   - 必须包含: type, opponentName (字符串), opponentDescription (字符串), description (字符串)
+   - 示例: { "type": "battle", "opponentName": "山贼头目", "opponentDescription": "一个凶悍的山贼", "description": "你与山贼头目展开战斗" }
+
+4. **nothing**: 无事发生
+   - 必须包含: type, description (字符串)
+   - 示例: { "type": "nothing", "description": "你安全离开了" }
+
+5. **reward_item**: 获得物品
+   - 必须包含: type, itemName (字符串，必须从可用装备列表中选择), description (字符串)
+   - 示例: { "type": "reward_item", "itemName": "破旧铁剑", "description": "你获得了一把破旧铁剑" }`;
 
     const availableItems = EQUIPMENT_POOL.map(e => e.name).join(', ');
 
@@ -1526,18 +1597,100 @@ export async function generateDoujinSkill(inspiration: string, rarity?: Rarity, 
 
 
 export async function generateCultivationMonitoringText(parentA: CharacterCard | PetCard, parentB: CharacterCard | PetCard, gameState?: GameState): Promise<string> {
-    const systemInstruction = `你是一个拥有上帝视角的观察者，正在通过一枚隐形的“监视水晶”窥探一个生命培育仓的内部。你的描述必须极度色情、露骨，并充满想象力。
-1.  **聚焦融合过程**: 描述两个不同的生命体（${parentA.name} 和 ${parentB.name}）的生命精华是如何相互吸引、碰撞、融合的。
-2.  **能量与形态**: 大胆描绘能量的颜色、形态和流动方式。例如，“${parentA.name}的金色阳气如狂龙般冲击着${parentB.name}的粉色元阴，二者在能量风暴的中心形成了一个旋转的光茧。”
-3.  **感官细节**: 描述光茧内部的变化，可以涉及到心跳声、能量波动、以及新生命形态的初步轮廓。
-4.  **直接输出**: 你的最终输出只需要一段纯文本描述，不要包含任何JSON格式或额外解释。`;
+    // 判断亲本类型 - CharacterCard 有 skills 数组，PetCard 只有单个 skill
+    const isParentAPet = !('skills' in parentA);
+    const isParentBPet = !('skills' in parentB);
+    const parentAGender = parentA.gender;
+    const parentBGender = parentB.gender;
+    
+    // 获取外观描述（如果有的话）
+    // CharacterCard 使用 appearance 字段，PetCard 使用 description 字段
+    const parentAAppearance = 'appearance' in parentA ? (parentA as CharacterCard).appearance : (parentA as PetCard).description;
+    const parentBAppearance = 'appearance' in parentB ? (parentB as CharacterCard).appearance : (parentB as PetCard).description;
+    
+    const systemInstruction = `你是一个拥有上帝视角的窥视者，正在通过一枚隐形的"监视水晶"偷窥育灵轩培育仓内两个亲本之间最私密、最淫荡的交配过程。你必须以第一人称视角，像在直播色情现场一样，极度详细、露骨、毫无保留地描述你看到的一切。
+
+**核心要求**:
+
+1.  **第一人称偷窥视角**:
+    - 用"我看到..."、"水晶中显示..."、"透过监视水晶..."等开头
+    - 营造真实的偷窥氛围和禁忌感
+
+2.  **聚焦交配/性交场景**（这是最重要的！）:
+    - 描述两个亲本【此刻】正在进行的性行为
+    - 必须是正在进行中的交配、性交、交合场景
+    - 详细描写性器官的交合过程、体位、动作
+    - 不要描述能量融合或孵化过程，只描述肉体交合
+
+3.  **根据亲本组合创作有趣的故事情节**:
+    ${isParentAPet !== isParentBPet ? `
+    **人兽组合特殊要求**:
+    - 这是一个人物角色（${isParentAPet ? parentB.name : parentA.name}）与兽宠（${isParentAPet ? parentA.name : parentB.name}）的交配
+    - 必须创作一个有趣的故事背景，例如：
+      · 人物角色不情愿但被兽宠强行交配/强暴
+      · 人物角色被兽宠的信息素/发情期影响而沦陷
+      · 人物角色被迫服从主人命令与兽宠交配
+      · 兽宠发情期狂暴，将人物角色按倒强行交合
+      · 人物角色起初抗拒，但逐渐沉沦于兽宠的巨大性器
+    - 描写人物角色的心理变化：从抗拒到屈服，从羞耻到沉沦
+    - 详细描写兽宠的野性、力量、巨大的性器官
+    ` : `
+    **同类组合要求**:
+    - 创作一个有趣的交配故事背景，例如：
+      · 一方主动诱惑/强迫另一方
+      · 双方因某种原因被迫交配（如被下药、被命令等）
+      · 一方不情愿但被另一方征服
+      · 激烈的情欲对决，看谁先屈服
+    `}
+
+4.  **极致色情的细节描绘**（必须包含）:
+    - **身体姿态**: 四肢如何摆放、如何被压制、交合的体位
+    - **面部表情**: 眼神、嘴型、是否流口水、是否哭泣、是否呻吟
+    - **性器官特写**:
+      · 阴茎/阳具的状态、大小、形状、如何插入
+      · 阴道/蜜穴的状态、如何被撑开、收缩
+      · 交合的深度、角度、节奏
+    - **体液描写**: 精液、淫水、唾液、汗水的流淌和飞溅
+    - **声音**: 呻吟声、喘息声、水声、肉体拍击声
+    - **动作细节**: 抽插的节奏、深度、速度变化
+
+5.  **故事性要求**:
+    - 必须有一个简短的故事背景（为什么会发生这种情况）
+    - 描写双方的心理活动和情绪变化
+    - 可以包含对话（呻吟、求饶、挑逗等）
+
+6.  **字数要求**: 250-400字
+
+7.  **禁止事项**:
+    - 不要描述能量融合、灵气交汇等抽象概念
+    - 不要描述孵化、培育、光茧等过程
+    - 不要含糊其辞或使用委婉语
+    - 不要使用JSON格式或任何标记语言
+    - 不要添加道德评判或结尾总结
+
+8.  **直接输出**: 你的最终输出只需要一段纯文本的偷窥描述，不要包含任何其他内容。`;
 
     const prompt = `
-    正在监视的培育仓：
-    - 亲代A: ${parentA.name} (种族/境界: ${'race' in parentA ? parentA.race : '兽族'}, 稀有度: ${parentA.rarity})
-    - 亲代B: ${parentB.name} (种族/境界: ${'race' in parentB ? parentB.race : '兽族'}, 稀有度: ${parentB.rarity})
+    正在监视的培育仓内的两个亲本：
+    
+    **亲本A**: ${parentA.name}
+    - 类型: ${isParentAPet ? '兽宠' : '人物角色'}
+    - 性别: ${parentAGender}
+    - 稀有度: ${parentA.rarity}
+    - 外观/描述: ${parentAAppearance || '无详细描述'}
+    
+    **亲本B**: ${parentB.name}
+    - 类型: ${isParentBPet ? '兽宠' : '人物角色'}
+    - 性别: ${parentBGender}
+    - 稀有度: ${parentB.rarity}
+    - 外观/描述: ${parentBAppearance || '无详细描述'}
 
-    请生成一段详细、色情、充满想象力的实时监视报告。
+    请以第一人称偷窥视角，生成一份极度详细、露骨、色情的实时监视报告。
+    
+    **重要**:
+    - 必须描述正在发生的性交/交配场景！
+    - 必须创作一个有趣的故事背景！
+    - ${isParentAPet !== isParentBPet ? '这是人兽交配，请特别描写人物角色的心理变化和兽宠的野性！' : '请描写双方的互动和情欲对决！'}
     `;
 
     // 使用增强生成（如果提供了gameState）

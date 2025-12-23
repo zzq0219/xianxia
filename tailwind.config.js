@@ -2,7 +2,10 @@
 module.exports = {
   content: [
     "./index.html",
-    "./**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
+    "./services/**/*.{js,ts,jsx,tsx}",
+    "./styles/**/*.{js,ts,jsx,tsx}",
+    "./*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
@@ -148,8 +151,9 @@ module.exports = {
 
       // 字体家族
       fontFamily: {
-        'serif': ['Georgia', 'Cambria', '"Times New Roman"', 'Times', 'serif'],
-        'xianxia': ['"Ma Shan Zheng"', '"STKaiti"', '"KaiTi"', 'serif'],
+        'serif': ['"Noto Serif SC"', '"Songti SC"', '"SimSun"', '"Times New Roman"', 'serif'],
+        // 恢复艺术字体，使用 ZCOOL XiaoWei 作为首选，因为它比 Ma Shan Zheng 更易读但仍有古风
+        'xianxia': ['"ZCOOL XiaoWei"', '"Ma Shan Zheng"', '"KaiTi"', '"STKaiti"', '"Noto Serif SC"', 'serif'],
       },
 
       // 自定义间距

@@ -2562,9 +2562,8 @@ const App: React.FC = () => {
     return (
         <div
             ref={appRef}
-            className="flex flex-col font-serif relative w-full h-full sm:w-[540px] sm:h-[960px]"
+            className="flex flex-col font-serif relative w-full h-full max-w-lg mx-auto shadow-2xl overflow-hidden"
             style={{
-                overflow: 'hidden',
                 backgroundImage: `url('https://github.com/zzq0219/sillytavern/blob/main/%E3%80%90%E5%93%B2%E9%A3%8E%E5%A3%81%E7%BA%B8%E3%80%91%E4%BA%91%E9%9B%BE-%E4%BB%99%E4%BE%A0.png?raw=true')`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
@@ -2607,8 +2606,8 @@ const App: React.FC = () => {
 
                 {/* VIEW: ADVENTURE */}
                 <div className={`absolute inset-0 pt-16 flex flex-col transition-opacity duration-300 ${viewMode === ViewMode.ADVENTURE ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
-                    <div className="flex-grow overflow-y-auto scrollbar-xianxia px-2 sm:px-4">
-                        <div className="max-w-3xl mx-auto h-full flex flex-col">
+                    <div className="flex-grow overflow-hidden px-2 sm:px-4 pb-2">
+                        <div className="w-full max-w-6xl mx-auto h-full flex flex-col">
                             {renderMainView()}
                         </div>
                     </div>
@@ -2616,7 +2615,7 @@ const App: React.FC = () => {
 
                 {/* VIEW: INVENTORY (Storage Bag) */}
                 <div className={`absolute inset-0 pt-16 flex flex-col transition-opacity duration-300 ${viewMode === ViewMode.INVENTORY ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
-                    <div className="h-full overflow-y-auto px-2 pt-2">
+                    <div className="h-full overflow-y-auto px-2 pt-2 pb-32">
                         <Inventory
                             playerProfile={gameState.playerProfile}
                             setPlayerProfile={(newProfile) => setGameState(prev => ({ ...prev, playerProfile: newProfile }))}

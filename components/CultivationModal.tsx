@@ -116,7 +116,7 @@ const CultivationSlotUI: React.FC<{
             >
                 {currentSelection ? (
                     <div className={`w-full h-full rounded-lg p-3 flex flex-col items-center justify-center text-center ${getRarityBorderColor(currentSelection.rarity)}`}>
-                        <p className="font-bold text-base md:text-lg truncate w-full px-2">{currentSelection.name}</p>
+                        <p className="font-bold text-base md:text-lg truncate w-full px-2 text-stone-100 text-shadow-sm">{currentSelection.name}</p>
                         <p className={`text-xs md:text-sm mt-1 ${getRarityTextColor(currentSelection.rarity)}`}>{currentSelection.rarity}</p>
                     </div>
                 ) : (
@@ -184,14 +184,14 @@ const CultivationSlotUI: React.FC<{
                 <h4 className="text-sm text-stone-400 mb-2 text-center">融合亲本</h4>
                 <div className="flex gap-3 md:gap-4 justify-center">
                     <div className={`flex-1 max-w-[45%] bg-black/50 rounded-lg p-3 flex flex-col items-center justify-center text-center ornate-border ${getRarityBorderColor(slot.parentA!.rarity)}`}>
-                        <p className="font-bold text-sm md:text-base truncate w-full">{slot.parentA!.name}</p>
+                        <p className="font-bold text-sm md:text-base truncate w-full text-stone-100">{slot.parentA!.name}</p>
                         <p className={`text-xs ${getRarityTextColor(slot.parentA!.rarity)}`}>{slot.parentA!.rarity}</p>
                     </div>
                     <div className="flex items-center justify-center text-amber-400">
                         <span className="text-xl">✕</span>
                     </div>
                     <div className={`flex-1 max-w-[45%] bg-black/50 rounded-lg p-3 flex flex-col items-center justify-center text-center ornate-border ${getRarityBorderColor(slot.parentB!.rarity)}`}>
-                        <p className="font-bold text-sm md:text-base truncate w-full">{slot.parentB!.name}</p>
+                        <p className="font-bold text-sm md:text-base truncate w-full text-stone-100">{slot.parentB!.name}</p>
                         <p className={`text-xs ${getRarityTextColor(slot.parentB!.rarity)}`}>{slot.parentB!.rarity}</p>
                     </div>
                 </div>
@@ -268,12 +268,14 @@ export const CultivationModal: React.FC<CultivationModalProps> = ({ isOpen, onCl
     return (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
             <div
-                className="w-full max-w-4xl h-[90vh] ornate-border border-xianxia-gold-600 bg-gradient-to-br from-stone-900 via-stone-950 to-black rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+                className="w-full max-w-4xl h-[90vh] ornate-border border-xianxia-gold-600 bg-stone-900 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
+                style={{ backgroundColor: '#1c1917' }} /* 强制背景色，防止透明 */
             >
-                <div className="flex justify-between items-center p-4 flex-shrink-0 bg-black/30 border-b border-xianxia-gold-700/50">
-                    <h2 className="text-3xl font-bold text-gradient-gold text-shadow-glow font-serif">育灵轩</h2>
-                    <button onClick={onClose} className="text-amber-300 hover:text-white transition-colors">
+                <div className="flex justify-between items-center p-4 flex-shrink-0 bg-black/50 border-b border-xianxia-gold-600/50">
+                    {/* 修复：移除衬线字体，改用 solid gold 样式 */}
+                    <h2 className="text-3xl font-bold text-gold-solid text-shadow-glow tracking-wide">育灵轩</h2>
+                    <button onClick={onClose} className="text-amber-400 hover:text-white transition-colors">
                         <i className="fa-solid fa-times text-2xl"></i>
                     </button>
                 </div>
@@ -288,9 +290,9 @@ export const CultivationModal: React.FC<CultivationModalProps> = ({ isOpen, onCl
                                 onClick={() => setActiveSlotId(slot.slotId)}
                                 className={`w-full p-3 rounded-lg text-left transition-all duration-200 border-2 ${activeSlotId === slot.slotId ? 'bg-stone-700/80 border-amber-500' : 'bg-stone-800/50 border-transparent hover:bg-stone-700/50'}`}
                             >
-                                <p className="font-bold">培育仓 #{slot.slotId}</p>
-                                <p className={`text-sm ${slot.status === 'Empty' ? 'text-gray-400' : slot.status === 'Breeding' ? 'text-cyan-400' : 'text-green-400'}`}>
-                                    状态: {slot.status}
+                                <p className={`font-bold ${activeSlotId === slot.slotId ? 'text-amber-100' : 'text-stone-300'}`}>培育仓 #{slot.slotId}</p>
+                                <p className={`text-sm ${slot.status === 'Empty' ? 'text-stone-400' : slot.status === 'Breeding' ? 'text-cyan-400' : 'text-green-400'}`}>
+                                    <span className="text-stone-400">状态:</span> {slot.status}
                                 </p>
                             </button>
                         ))}

@@ -26,8 +26,9 @@ const CategorySection: React.FC<{ title: string; items: SystemMenuItem[]; delayS
                 <div className="absolute inset-0 border border-amber-500/30 rotate-45 transform scale-75"></div>
                 <div className="w-1.5 h-1.5 bg-amber-500 rotate-45 shadow-[0_0_8px_rgba(245,158,11,0.8)]"></div>
             </div>
-            <h3 className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-stone-400 font-serif font-bold text-lg tracking-[0.2em]">{title}</h3>
-            <div className="h-[1px] flex-1 bg-gradient-to-r from-amber-900/50 via-stone-800/30 to-transparent"></div>
+            {/* 修复：移除渐变文字，改用高对比度纯色；移除衬线字体 */}
+            <h3 className="text-amber-300 font-bold text-lg tracking-[0.2em] shadow-black drop-shadow-md">{title}</h3>
+            <div className="h-[1px] flex-1 bg-gradient-to-r from-amber-600/50 via-stone-700/50 to-transparent"></div>
         </div>
 
         <div className="grid grid-cols-4 sm:grid-cols-5 gap-y-4 sm:gap-y-6 gap-x-2">
@@ -56,8 +57,9 @@ const CategorySection: React.FC<{ title: string; items: SystemMenuItem[]; delayS
                     </div>
 
                     <div className="text-center w-full z-10">
-                        <div className="text-stone-300 text-xs font-serif font-medium tracking-wider group-hover:text-amber-100 transition-colors">{item.label}</div>
-                        <div className="text-[10px] text-stone-600 scale-90 hidden sm:block truncate mt-0.5 group-hover:text-amber-500/70 transition-colors">{item.desc}</div>
+                        {/* 修复：移除衬线字体，增强文字亮度 */}
+                        <div className="text-stone-200 text-xs font-bold tracking-wider group-hover:text-white transition-colors drop-shadow-sm">{item.label}</div>
+                        <div className="text-[10px] text-stone-400 scale-90 hidden sm:block truncate mt-0.5 group-hover:text-amber-400 transition-colors">{item.desc}</div>
                     </div>
                 </button>
             ))}
@@ -174,18 +176,19 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = (props) => {
 
                     <div className="absolute bottom-6 left-6 z-10">
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="bg-emerald-900/60 border border-emerald-500/30 text-emerald-200 text-xs px-2 py-0.5 rounded backdrop-blur">洞天福地</span>
+                            <span className="bg-emerald-900/80 border border-emerald-500/50 text-emerald-100 text-xs px-2 py-0.5 rounded backdrop-blur font-bold">洞天福地</span>
                         </div>
-                        <h2 className="text-3xl text-white font-serif tracking-widest drop-shadow-md">静室修行</h2>
-                        <p className="text-stone-400 text-sm font-serif mt-1 flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        {/* 修复：移除衬线字体 */}
+                        <h2 className="text-3xl text-white font-bold tracking-widest drop-shadow-lg">静室修行</h2>
+                        <p className="text-stone-300 text-sm mt-1 flex items-center gap-2 font-medium">
+                            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
                             当前灵气浓度: 充盈
                         </p>
                     </div>
 
                     <div className="absolute right-6 bottom-6 z-10">
-                        <div className="w-12 h-12 rounded-full border border-amber-500/50 bg-black/40 backdrop-blur flex items-center justify-center animate-pulse-glow hover:bg-amber-500/20 transition-colors">
-                            <span className="text-amber-500 font-serif text-xl">收</span>
+                        <div className="w-12 h-12 rounded-full border border-amber-500/50 bg-black/60 backdrop-blur flex items-center justify-center animate-pulse-glow hover:bg-amber-500/30 transition-colors">
+                            <span className="text-amber-400 font-bold text-xl">收</span>
                         </div>
                     </div>
                 </div>
@@ -196,7 +199,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = (props) => {
                 <CategorySection title="道途修行" items={PERSONAL_GROWTH} delayStart={300} onGlobalNav={handleMenuClick} />
 
                 {/* Extra padding at bottom to ensure last items clear the dock */}
-                <div className="h-10"></div>
+                <div className="h-32"></div>
             </div>
         </div>
     );

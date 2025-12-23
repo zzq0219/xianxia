@@ -92,7 +92,6 @@ export const EnhancedModal: React.FC<EnhancedModalProps> = ({
             >
                 {/* 装饰性背景图案 */}
                 <div className="absolute inset-0 opacity-5 pointer-events-none">
-                    <div className="absolute inset-0 bg-[url('/pattern-xianxia.png')] bg-repeat opacity-20" />
                 </div>
 
                 {/* 顶部光效 */}
